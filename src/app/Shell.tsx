@@ -32,6 +32,7 @@ import {
   ArrowLeft,
   Mail,
   PanelsTopLeft,
+  MessageSquare,
   Palmtree,
   ChartNoAxesCombined,
   MapPin,
@@ -191,6 +192,11 @@ export default function Shell() {
             <span>Jira</span>
             <small>Soon</small>
           </button>
+          <NavLink to={`${base}/teams`} className="sidebar-integration teams-sidebar-link" title="Open Teams">
+            <MessageSquare size={19} />
+            <span>Teams</span>
+            <small>Preview</small>
+          </NavLink>
         </div>
         <div className="sidebar-bottom">
           <NavLink className="settings-link" to={`${base}/profile`}>
@@ -251,9 +257,10 @@ export default function Shell() {
                     analytics: "Employee analytics",
                     maps: "Maps",
                     profile: "My profile",
+                    teams: "Teams",
                   }[
                     loc.pathname.split("/").pop() as
-                      "analytics" | "maps" | "profile"
+                      "analytics" | "maps" | "profile" | "teams"
                   ] ||
                   "Workspace"}
               </strong>

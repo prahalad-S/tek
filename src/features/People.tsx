@@ -17,6 +17,8 @@ import {
   LayoutGrid,
   List,
   MapPin,
+  Mail,
+  Phone,
   X,
   ArrowRight,
   ArrowDownAZ,
@@ -518,13 +520,12 @@ export default function People() {
                 >
                   <>
                     {filtered.map((person) => (
-                      <button
+                      <article
                         className="person-card"
                         data-person-id={person.id}
                         key={person.id}
-                        onClick={() => choose(person)}
                       >
-                        <div className="person-card-main">
+                        <button type="button" className="person-card-main" onClick={() => choose(person)} aria-label={`View ${person.full_name} profile`}>
                           <Avatar person={person} size="large" />
                           <div className="person-info">
                             <h3>{person.full_name}</h3>
@@ -533,17 +534,20 @@ export default function People() {
                               {person.departments?.name || "Team member"}
                             </span>
                           </div>
-                        </div>
+                        </button>
                         <div className="person-card-footer">
-                          <span>
-                            <MapPin size={13} />
-                            {person.location || "Location not added"}
-                          </span>
-                          <span>
-                            View profile <ArrowRight size={13} />
-                          </span>
+                          <span><MapPin size={13} />{person.location || "Location not added"}</span>
+                          <div className="person-card-actions">
+                            {person.email ? (
+                              <a className="person-contact-action" href={`mailto:${person.email}`} aria-label={`Email ${person.full_name}`} title={`Email ${person.full_name}`}><Mail size={15} /></a>
+                            ) : (
+                              <span className="person-contact-unavailable" title="Email address unavailable"><button type="button" className="person-contact-action" disabled aria-label={`Email unavailable for ${person.full_name}`}><Mail size={15} /></button></span>
+                            )}
+                            <span className="person-contact-unavailable" title="Calling unavailable — no public work number is configured"><button type="button" className="person-contact-action" disabled aria-label={`Calling unavailable for ${person.full_name}`}><Phone size={15} /></button></span>
+                            <button type="button" className="person-profile-action" onClick={() => choose(person)}>View profile <ArrowRight size={13} /></button>
+                          </div>
                         </div>
-                      </button>
+                      </article>
                     ))}
                   </>
                 </div>

@@ -3,10 +3,13 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const issueFields = ["summary", "status", "issuetype", "priority", "project", "updated"];
 
 Deno.serve(async (req: Request) => {
-  const configuredOrigin = Deno.env.get("APP_ORIGIN") || "";
+  const configuredOrigins = (Deno.env.get("APP_ORIGIN") || "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
   const requestOrigin = req.headers.get("origin") || "";
-  const allowedOrigins = new Set([configuredOrigin]);
-  if (configuredOrigin) {
+  const allowedOrigins = new Set(configuredOrigins);
+  for (const configuredOrigin of configuredOrigins) {
     try {
       const configured = new URL(configuredOrigin);
       if (configured.hostname === "localhost" || configured.hostname === "127.0.0.1") {
@@ -17,7 +20,7 @@ Deno.serve(async (req: Request) => {
       // Invalid origins remain blocked by the exact-origin check below.
     }
   }
-  const origin = allowedOrigins.has(requestOrigin) ? requestOrigin : configuredOrigin;
+  const origin = allowedOrigins.has(requestOrigin) ? requestOrigin : (configuredOrigins[0] || "");
   const headers = {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
