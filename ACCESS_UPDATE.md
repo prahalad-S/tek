@@ -1,0 +1,13 @@
+# Employee administration and location editing
+
+Apply `../Tekzenit-workspace-update.sql` first in the Supabase SQL Editor. It applies missing migrations 006–018 and skips completed updates. Then run `../Tekzenit-administrator-and-team-access.sql` in the same project. No hosted changes were executed during implementation.
+
+The account script grants administrator access to the confirmed, claimed, active account prahlad.sabbavarapu@tekzenit.com. It grants Dinesh Jakka editing for SYMBIOSYS and Srinivasu Kayini editing for INDIA. Names must match exactly one employee each; ambiguous matches stop the scope transaction. Existing global administrators must first be changed to Employee before location-only grants. The script replaces previous location scopes for those two employees. Sign out and back in after applying permissions. Another administrator can later demote Prahlad in Access management.
+
+Administrators can add employees and edit every profile through its pencil action: basic details, photo, career history, skills and documents. Authentication email remains managed by Supabase Auth. Pending profiles support basic, career and personal detail edits plus manual map pins after migration 016. Profile document uploads still require account activation. Location editors can edit matching profiles, including private details and documents, but cannot add/remove employees, grant roles, or change department/location. Supabase functions, row policies and storage policies enforce these boundaries.
+
+Delete employee is an archive action: mark Left or Terminated, remove from the active directory, disable membership and account claiming, and preserve documents/timesheets. It does not delete the Supabase Auth identity. Existing sessions lose portal data access on subsequent requests. Self-removal and removal of another administrator are blocked. Approvals lists former employees with status and name sorting. Restoring an archived employee is currently an administrator database operation; there is no restore button.
+
+People has separate add/delete icons, distinct default-sort and reset-filter icons, and a minimum-tenure slider in half-year steps based on joining date. Reset clears search, department, location, tenure and sorting. Unknown joining dates appear only when the tenure filter is zero. Preview data is fictional.
+
+Validation: 49 database/domain/export/upload tests pass, including admin and scoped editing, cross-location denials, photo policies, membership deactivation, and archived history retention. The combined SQL update is applied twice in the test run to check repeatability. Production and design-preview builds and public-asset checks pass. Hosted Auth/Storage integration still needs testing after applying the SQL.

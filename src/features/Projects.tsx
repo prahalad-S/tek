@@ -1,0 +1,322 @@
+import { useCardReflow } from "../components/useCardReflow";
+import { ProjectAvatars, useProjectAvatars } from "./ProjectAvatars";
+import { useSearchParams } from "react-router-dom";
+import { client } from "../lib/supabase";
+import ProjectTeam from "./ProjectTeam";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Plus,
+  ArrowUpRight,
+  FolderKanban,
+  LayoutGrid,
+  List,
+} from "lucide-react";
+import { useAuth } from "../app/providers";
+import { projects, rpc } from "../lib/api";
+import { previewProjects, previewWork } from "../lib/preview";
+import type { Project } from "../lib/types";
+import { errorMessage } from "../lib/domain";
+import {
+  PageHeader,
+  Badge,
+  Modal,
+  Loading,
+  ErrorState,
+  EmptyState,
+  useToast,
+} from "../components/ui";
+export default function Projects() {
+  const { preview, member, profile } = useAuth();
+  const [params] = useSearchParams();
+  const avatarPeople = useProjectAvatars(preview);
+  const scope = params.get("scope");
+  const assignments = useQuery({
+    queryKey: ["project-scopes", scope, profile?.user_id],
+    queryFn: async () => {
+      if (preview || !scope) return null;
+      let users = [profile!.user_id!];
+      if (scope === "team") {
+        if (!profile?.department_id) return [];
+        const r = await client()
+          .from("employees")
+          .select("user_id")
+          .eq("department_id", profile!.department_id!);
+        if (r.error) throw r.error;
+        users = r.data.map((p) => p.user_id).filter(Boolean);
+      }
+      if (!users.length) return [];
+      const r = await client()
+        .from("project_memberships")
+        .select("project_id")
+        .in("user_id", users);
+      if (r.error) throw r.error;
+      return r.data.map((p) => p.project_id);
+    },
+  });
+  const q = useQuery({
+    queryKey: ["projects", preview],
+    queryFn: () => (preview ? Promise.resolve(previewProjects) : projects()),
+  });
+  const [view, setView] = useState("grid");
+  const { reflow } = useCardReflow(".project-grid [data-project-id]");
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState<Project | null>(null);
+  const [busy, setBusy] = useState(false);
+  const toast = useToast();
+  const qc = useQueryClient();
+  const manage = member?.role !== "employee";
+  return (
+    <>
+      <PageHeader
+        eyebrow="WORK THAT MATTERS"
+        title={
+          scope === "mine"
+            ? "My projects"
+            : scope === "team"
+              ? "Team projects"
+              : "Moving forward, together"
+        }
+        description="A shared view of the projects bringing our ideas to life."
+        actions={
+          <>
+            <div className="view-toggle" aria-label="Project view">
+              {[
+                { id: "grid", label: "Project grid view", Icon: LayoutGrid },
+                { id: "list", label: "Project list view", Icon: List },
+              ].map(({ id, label, Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  aria-label={label}
+                  title={label}
+                  aria-pressed={view === id}
+                  onClick={() => reflow(() => setView(id))}
+                >
+                  <Icon size={18} />
+                </button>
+              ))}
+            </div>
+            {manage && (
+              <button
+                className="button"
+                onClick={() => {
+                  setSelected(null);
+                  setOpen(true);
+                }}
+              >
+                <Plus size={16} />
+                New project
+              </button>
+            )}
+          </>
+        }
+      />
+      {assignments.error ? (
+        <ErrorState error={assignments.error} />
+      ) : q.isPending || assignments.isPending ? (
+        <Loading />
+      ) : q.error ? (
+        <ErrorState error={q.error} />
+      ) : !q.data.length ? (
+        <EmptyState
+          title="Room for your next idea"
+          description="Your administrator or manager can create your first project."
+        />
+      ) : (
+        <div
+          className={`project-grid ${view === "list" ? "project-grid--list" : ""}`}
+        >
+          {q.data
+            .filter((p) => !assignments.data || assignments.data.includes(p.id))
+            .map((p, i) => (
+              <button
+                className={`project-card project-color-${i % 4}`}
+                key={p.id}
+                data-project-id={p.id}
+                onClick={() => {
+                  setSelected(p);
+                  setOpen(true);
+                }}
+              >
+                <div className="project-top">
+                  <span className="project-symbol">
+                    <FolderKanban size={24} />
+                  </span>
+                  <Badge tone={p.status === "active" ? "green" : "neutral"}>
+                    {p.status}
+                  </Badge>
+                </div>
+                <h2>{p.name}</h2>
+                {[
+                  (p as any).client_name,
+                  (p as any).city,
+                  (p as any).country,
+                ].some(Boolean) && (
+                  <p className="project-meta">
+                    {[
+                      (p as any).client_name,
+                      [(p as any).city, (p as any).country]
+                        .filter(Boolean)
+                        .join(", "),
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                )}
+                <p className="project-description">
+                  {p.description || "A new project, full of possibility."}
+                </p>
+                {preview && (
+                  <p className="project-meta">
+                    Demo work ·{" "}
+                    {previewWork
+                      .filter((entry) => entry.project_id === p.id)
+                      .reduce((total, entry) => total + entry.minutes, 0) /
+                      60}{" "}
+                    hours · 8 weeks
+                  </p>
+                )}
+                <ProjectAvatars
+                  projectId={p.id}
+                  data={avatarPeople.data}
+                  pending={avatarPeople.isPending}
+                  error={!!avatarPeople.error}
+                />
+                <div className="project-bottom">
+                  <span>{manage ? "View & manage" : "Project details"}</span>
+                  <ArrowUpRight size={18} />
+                </div>
+              </button>
+            ))}
+        </div>
+      )}
+      <Modal
+        wide
+        open={open}
+        onClose={() => setOpen(false)}
+        title={selected ? selected.name : "Start something good"}
+        description={
+          manage
+            ? "Keep your project details clear and useful."
+            : "A shared view of this project."
+        }
+      >
+        {manage ? (
+          <form
+            className="project-editor-columns"
+            key={selected?.id || "new"}
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (preview) {
+                toast("Preview only. Connect your workspace to save projects.");
+                setOpen(false);
+                return;
+              }
+              setBusy(true);
+              const f = new FormData(e.currentTarget);
+              try {
+                await rpc("save_project_details", {
+                  p_id: selected?.id ?? null,
+                  p_name: f.get("name"),
+                  p_description: f.get("description"),
+                  p_status: f.get("status"),
+                  p_client: f.get("client"),
+                  p_country: f.get("country"),
+                  p_city: f.get("city"),
+                });
+                void qc.invalidateQueries({ queryKey: ["projects"] });
+                setOpen(false);
+                toast("Project saved.");
+              } catch (e) {
+                toast(errorMessage(e), "error");
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            <label>
+              Project name
+              <input
+                name="name"
+                defaultValue={selected?.name}
+                required
+                maxLength={120}
+              />
+            </label>
+            <label>
+              Description
+              <textarea
+                name="description"
+                rows={2}
+                maxLength={4000}
+                defaultValue={selected?.description}
+              />
+            </label>
+            <div className="form-grid">
+              {[
+                ["client", "Client name"],
+                ["country", "Country"],
+                ["city", "City"],
+              ].map(([key, label]) => (
+                <label key={key}>
+                  {label}
+                  <input
+                    name={key}
+                    maxLength={120}
+                    defaultValue={
+                      (selected as any)?.[
+                        key + (key === "client" ? "_name" : "")
+                      ] || ""
+                    }
+                  />
+                </label>
+              ))}
+            </div>
+            <label>
+              Status
+              <select name="status" defaultValue={selected?.status || "active"}>
+                <option value="active">Active</option>
+                <option value="paused">Paused</option>
+                <option value="completed">Completed</option>
+              </select>
+            </label>
+            <div className="form-actions">
+              <button
+                className="button secondary"
+                type="button"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </button>
+              <button className="button" disabled={busy}>
+                Save project
+              </button>
+            </div>
+          </form>
+        ) : (
+          <>
+            <Badge>{selected?.status}</Badge>
+            <p>{selected?.description}</p>
+          </>
+        )}
+        {preview && selected && (
+          <section className="panel" style={{ padding: 20 }}>
+            <h3>Recent demo timesheet entries</h3>
+            {previewWork
+              .filter((entry) => entry.project_id === selected.id)
+              .sort((a, b) => b.work_date.localeCompare(a.work_date))
+              .slice(0, 8)
+              .map((entry) => (
+                <p key={entry.id}>
+                  {entry.work_date} · {entry.description} · {entry.minutes / 60}
+                  h
+                </p>
+              ))}
+          </section>
+        )}
+        {selected && <ProjectTeam projectId={selected.id} manage={manage} />}
+      </Modal>
+    </>
+  );
+}

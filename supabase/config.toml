@@ -1,0 +1,19 @@
+project_id = "tekzenit"
+[functions.assistant]
+verify_jwt = false
+# The function validates the access token with auth.getUser; no service-role client.
+[auth]
+enable_signup = true
+minimum_password_length = 12
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+
+[functions.geocode-profile]
+verify_jwt = false
+# Validates the caller with auth.getUser and uses caller-scoped RLS.
+
+[functions.jira]
+verify_jwt = false
+# The function validates the caller with auth.getUser; Jira credentials stay server-side.
+

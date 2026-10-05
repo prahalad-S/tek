@@ -1,0 +1,31 @@
+-- Private notes, folders, and attachments. No public read or administrator bypass.
+create table public.workspace_folders(id uuid primary key default gen_random_uuid(),owner_id uuid not null default auth.uid() references auth.users(id),name text not null check(length(trim(name)) between 1 and 100),created_at timestamptz not null default now());
+create table public.workspace_notes(id uuid primary key default gen_random_uuid(),owner_id uuid not null default auth.uid() references auth.users(id),folder_id uuid references public.workspace_folders(id) on delete set null,title text not null check(length(trim(title)) between 1 and 160),content text not null default '' check(length(content)<=200000),created_at timestamptz not null default now(),updated_at timestamptz not null default now());
+create table public.workspace_files(id uuid primary key default gen_random_uuid(),owner_id uuid not null default auth.uid() references auth.users(id),folder_id uuid references public.workspace_folders(id) on delete set null,note_id uuid references public.workspace_notes(id) on delete set null,name text not null check(length(name) between 1 and 255),object_path text not null unique,mime_type text not null,size_bytes bigint not null check(size_bytes between 1 and 20971520),created_at timestamptz not null default now());
+create index workspace_notes_owner on public.workspace_notes(owner_id,folder_id);
+create index workspace_files_owner on public.workspace_files(owner_id,folder_id,note_id);
+alter table public.workspace_folders enable row level security;
+alter table public.workspace_notes enable row level security;
+alter table public.workspace_files enable row level security;
+grant select,insert,update,delete on public.workspace_folders,public.workspace_notes to authenticated;
+grant select,delete on public.workspace_files to authenticated;
+create policy folder_owner on public.workspace_folders for all to authenticated using(private.is_member() and owner_id=auth.uid()) with check(private.is_member() and owner_id=auth.uid());
+create policy note_owner on public.workspace_notes for all to authenticated using(private.is_member() and owner_id=auth.uid()) with check(private.is_member() and owner_id=auth.uid() and (folder_id is null or exists(select 1 from public.workspace_folders f where f.id=folder_id and f.owner_id=auth.uid())));
+create policy file_owner_read on public.workspace_files for select to authenticated using(private.is_member() and owner_id=auth.uid());
+create policy file_owner_delete on public.workspace_files for delete to authenticated using(private.is_member() and owner_id=auth.uid());
+create function private.note_modified() returns trigger language plpgsql set search_path='' as $$begin new.updated_at=now();return new;end;$$;
+create trigger note_modified before update on public.workspace_notes for each row execute function private.note_modified();
+insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types) values('workspace-files','workspace-files',false,20971520,array['application/pdf','image/jpeg','image/png','image/webp','image/gif','text/plain','text/csv','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation','application/zip']);
+create policy workspace_upload on storage.objects for insert to authenticated with check(bucket_id='workspace-files' and (storage.foldername(name))[1]=auth.uid()::text and private.is_member());
+create policy workspace_read on storage.objects for select to authenticated using(bucket_id='workspace-files' and (storage.foldername(name))[1]=auth.uid()::text and private.is_member());
+create policy workspace_delete on storage.objects for delete to authenticated using(bucket_id='workspace-files' and (storage.foldername(name))[1]=auth.uid()::text and private.is_member());
+create function public.register_workspace_file(p_name text,p_path text,p_mime text,p_size bigint,p_folder uuid default null,p_note uuid default null) returns uuid language plpgsql security definer set search_path='' as $$declare result uuid;begin
+ perform private.assert_member();
+ if split_part(p_path,'/',1)<>auth.uid()::text or not exists(select 1 from storage.objects where bucket_id='workspace-files' and name=p_path) then raise exception 'Upload not found.';end if;
+ if p_folder is not null and not exists(select 1 from public.workspace_folders where id=p_folder and owner_id=auth.uid()) then raise exception 'Folder unavailable.';end if;
+ if p_note is not null and not exists(select 1 from public.workspace_notes where id=p_note and owner_id=auth.uid()) then raise exception 'Note unavailable.';end if;
+ if not exists(select 1 from storage.buckets where id='workspace-files' and p_mime=any(allowed_mime_types)) then raise exception 'Unsupported file type.';end if;
+ insert into public.workspace_files(owner_id,folder_id,note_id,name,object_path,mime_type,size_bytes) values(auth.uid(),p_folder,p_note,p_name,p_path,p_mime,p_size) returning id into result;return result;end;$$;
+revoke all on function private.note_modified() from public,anon,authenticated;
+revoke all on function public.register_workspace_file(text,text,text,bigint,uuid,uuid) from public,anon;
+grant execute on function public.register_workspace_file(text,text,text,bigint,uuid,uuid) to authenticated;

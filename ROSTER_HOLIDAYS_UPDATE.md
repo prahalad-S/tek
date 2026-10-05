@@ -1,0 +1,11 @@
+# Calendar details, holidays and confirmed roster
+
+The time-entry details popup now presents the employee identity, date, duration, project, task status, description and timesheet status in compact cards. Existing edit-window checks remain in place for mutations. Unknown billing/timestamp metadata is not fabricated.
+
+Apply ../Tekzenit-workspace-update.sql first (through migration 020). It adds location-scoped company holidays: eight USA dates and nine shared INDIA/SYMBIOSYS dates for 2026, plus partial birthday and private work phone/extension fields. Birthdays never require an invented birth year. Holidays can be filtered by location in Events & holidays; calendar cells follow the selected employee location, while All authorized employees shows all locations.
+
+The user confirmed 60 screenshot employees as the complete active roster and +91 for SYMBIOSYS mobile numbers. A separate PRIVATE roster script and CSV are stored in private-migration, excluded from Git, hosting and the source ZIP. Run private-migration/Apply-confirmed-roster.sql AFTER the workspace update. It backs up the affected employee/profile/private/access records in a private database table, reconciles email/name matches, preserves unknown fields and history, and marks non-roster people Left with access disabled. It aborts atomically on ambiguous matches or mismatching existing Auth login emails. It does not create Auth accounts or elevate roles.
+
+No hosted SQL was executed by the assistant. Validation: 52 tests, combined update applied twice, private roster imported twice in embedded PostgreSQL, 60 active rows, departed access disabled, listed admin role retained, partial birthdays preserved, 17 holidays, builds and public-asset checks passed.
+
+Calendar cards now use their project palette for the left border and compact outlined hour badges. Legend totals follow the selected period and filters, including visibly enabled test data. Billing classification currently uses project names: Internal, Non-Billable, Meeting, Idle Time, Vacation, Leave, Training and Holiday are non-billable; other projects are classified billable. Leave requests are excluded from these work-entry totals. The submission link opens the existing weekly review page and does not submit test records.
