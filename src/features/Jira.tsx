@@ -1,3 +1,4 @@
+import JiraTaskPanel from "./JiraTaskPanel";
 import { useQuery } from "@tanstack/react-query";
 import {
   AlertCircle,
@@ -56,8 +57,9 @@ export default function JiraPanel({
       return data;
     },
     enabled: open && !preview,
-    staleTime: 30_000,
-    refetchOnWindowFocus: false,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 
   const title = "My Jira issues";
@@ -152,6 +154,7 @@ export default function JiraPanel({
               description={`Jira is connected as ${query.data.account.displayName}, and no visible issues are currently assigned to that account.`}
             />
           ) : null}
+          <JiraTaskPanel />
         </section>
       )}
     </Modal>

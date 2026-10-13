@@ -62,7 +62,7 @@ export async function directoryPeople(
       .select(
         "*,departments(name),employee_profiles(joined_on,employment_status)",
       )
-      .order("full_name")
+      .order("full_name").order("id")
       .range(start, start + 199);
     if (error) throw error;
     all.push(
@@ -95,7 +95,7 @@ export async function directoryPeople(
     );
     if (data.length < 200) break;
   }
-  return all;
+  return [...new Map(all.map(person=>[person.id,person])).values()];
 }
 export async function extendedProfile(
   employee: Employee,

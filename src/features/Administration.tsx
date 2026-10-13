@@ -1,7 +1,7 @@
 import DeleteEmployee from "./profiles/DeleteEmployee";
 import { useSearchParams } from "react-router-dom";
 import { workHistory } from "../lib/workHistory";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, ShieldCheck, Download, Building2, Trash2 } from "lucide-react";
 import { useAuth } from "../app/providers";
@@ -24,6 +24,10 @@ export function Access() {
     params.get("delete") === "1",
   );
   const [open, setOpen] = useState(params.get("new") === "1");
+  useEffect(() => {
+    if (params.get("new") === "1") setOpen(true);
+    if (params.get("delete") === "1") setDeletingEmployee(true);
+  }, [params]);
   const [busy, setBusy] = useState(false);
   const [departmentOpen, setDepartmentOpen] = useState(false);
   const [change, setChange] = useState<{

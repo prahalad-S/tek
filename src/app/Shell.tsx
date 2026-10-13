@@ -1,3 +1,5 @@
+import JarvisIntro from "../features/JarvisIntro";
+import { assignedJiraQuery } from "../lib/jiraIssueCache";
 import { useState, useEffect, lazy, Suspense } from "react";
 import {
   NavLink,
@@ -9,6 +11,7 @@ import {
 } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  Code2,
   LayoutDashboard,
   Users,
   CalendarDays,
@@ -51,8 +54,9 @@ import {
   useToast,
 } from "../components/ui";
 import { errorMessage } from "../lib/domain";
-const Assistant = lazy(() => import("../features/Assistant"));
+const JarvisOverlay = lazy(() => import("../features/JarvisOverlay"));
 const JiraPanel = lazy(() => import("../features/Jira"));
+const jarvisIntroSeenThisPage = new Set<string>();
 export default function Shell() {
   const {
     profile,
@@ -67,6 +71,18 @@ export default function Shell() {
   const { theme, setTheme } = useTheme();
   const [mobile, setMobile] = useState(false);
   const [assistant, setAssistant] = useState(false);
+  const [jarvisBlur, setJarvisBlur] = useState(true);
+  const [introVisible,setIntroVisible]=useState(false);
+  const [introReveal,setIntroReveal]=useState(false);
+  function openAssistant() {
+    if(introVisible || assistant)return;
+    setJarvisBlur(true);
+    void import("../features/JarvisOverlay");
+    const key=session?`tek-jarvis-intro:${session.user.id}:${session.user.last_sign_in_at || "signed-in"}`:"";
+    if(!preview && key && !jarvisIntroSeenThisPage.has(key)) {
+      jarvisIntroSeenThisPage.add(key);setIntroReveal(true);setIntroVisible(true);
+    } else {setIntroReveal(false);setAssistant(true);}
+  }
   const [jira, setJira] = useState(false);
   const [notification, setNotification] = useState(false);
   const [command, setCommand] = useState(false);
@@ -76,6 +92,12 @@ export default function Shell() {
   const navigate = useNavigate();
   const [account, setAccount] = useState(false);
   const qc = useQueryClient();
+  useQuery({
+    ...assignedJiraQuery(profile?.user_id || ""),
+    enabled: !preview && !!session && !!profile?.user_id,
+    refetchInterval: 60000,
+    refetchOnWindowFocus: true,
+  });
   const base = preview ? "/preview" : "";
   const n = useQuery({
     queryKey: ["notifications", preview, profile?.user_id],
@@ -121,6 +143,7 @@ export default function Shell() {
     { path: "timesheets", label: "My timesheet", icon: Clock3 },
     { path: "calendar", label: "Calendar", icon: CalendarDays },
     { path: "projects", label: "Projects", icon: FolderKanban },
+    { path: "editor", label: "Editor", icon: Code2 },
     { path: "leave", label: "Time off", icon: Coffee },
     { path: "documents", label: "Documents", icon: FileText },
     { path: "reports", label: "History", icon: Clock3 },
@@ -132,7 +155,7 @@ export default function Shell() {
       : []),
   ];
   return (
-    <div className="app-shell">
+    <div className={`app-shell${assistant && jarvisBlur ? " jarvis-open" : ""}`}>
       <a className="skip-link" href="#main">
         Skip to content
       </a>
@@ -192,7 +215,11 @@ export default function Shell() {
             <span>Jira</span>
             <small>Soon</small>
           </button>
-          <NavLink to={`${base}/teams`} className="sidebar-integration teams-sidebar-link" title="Open Teams">
+          <NavLink
+            to={`${base}/teams`}
+            className="sidebar-integration teams-sidebar-link"
+            title="Open Teams"
+          >
             <MessageSquare size={19} />
             <span>Teams</span>
             <small>Preview</small>
@@ -258,6 +285,7 @@ export default function Shell() {
                     maps: "Maps",
                     profile: "My profile",
                     teams: "Teams",
+                    editor: "Editor",
                   }[
                     loc.pathname.split("/").pop() as
                       "analytics" | "maps" | "profile" | "teams"
@@ -402,13 +430,19 @@ export default function Shell() {
             </span>
           </footer>
         </main>
-        <button className="assistant-fab" onClick={() => setAssistant(true)}>
+        <button
+          className="assistant-fab"
+          onClick={openAssistant}
+        >
           <Sparkles size={18} />
-          <span>Ask Jarvis</span>
+          <span>
+            Ask Jarvis
+          </span>
         </button>
       </div>
+      {introVisible && <JarvisIntro onReveal={()=>setAssistant(true)} onDone={()=>setIntroVisible(false)}/>}
       <Suspense fallback={null}>
-        <Assistant open={assistant} onClose={() => setAssistant(false)} />
+        {assistant && <JarvisOverlay introReveal={introReveal} onCommandReceived={() => setJarvisBlur(false)} onClose={() => setAssistant(false)} openJira={() => setJira(true)} />}
       </Suspense>
       <Suspense fallback={null}>
         <JiraPanel

@@ -1,6 +1,8 @@
+import ResumeStyleChooser from "./ResumeStyleChooser";
+import type { ResumeStyle } from "../../lib/resumeStyles";
 import { useProfileManagement } from "../../lib/useProfileManagement";
 import { showDocument } from "../../lib/employeeDetails";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   FileText,
@@ -53,6 +55,54 @@ export default function ProfileDocuments({
       mime: string;
     } | null>(null);
   const [deleting, setDeleting] = useState<any>(null);
+  const [resumeStyleOpen,setResumeStyleOpen]=useState(false);
+  const [paired, setPaired] = useState<{kind:string;url:string;mime:string;name:string}[]>([]);
+  const pairedRef = useRef(paired); pairedRef.current = paired;
+  const pairBusy = useRef(false);
+  const closePair = () => { for(const item of pairedRef.current) if(item.url.startsWith("blob:")) URL.revokeObjectURL(item.url); setPaired([]); };
+  useEffect(() => {
+    if(profile?.id !== employee.id) return;
+    const open = () => { void openPair(); };
+    const download = () => { void downloadPair(); };
+    window.addEventListener("jarvis-profile-pair",open);
+    window.addEventListener("jarvis-profile-pair-download",download);
+    return () => {
+      window.removeEventListener("jarvis-profile-pair",open);
+      window.removeEventListener("jarvis-profile-pair-download",download);
+      for(const item of pairedRef.current) if(item.url.startsWith("blob:")) URL.revokeObjectURL(item.url);
+    };
+  },[employee.id,profile?.id,data,preview]);
+  async function openPair() {
+    if(pairBusy.current) return;
+    pairBusy.current=true; setBusy(true);
+    const items:{kind:string;url:string;mime:string;name:string}[]=[];
+    try {
+      const {downloadProfileDocument}=await import("../../lib/profileDocuments");
+      for(const kind of ["id_card","resume"]) {
+        const doc=data.documents.find((d:any)=>d.category===kind);
+        if(doc) items.push({kind,url:await signedUrl("employee-documents",doc.object_path),mime:doc.mime_type,name:doc.name});
+        else await downloadProfileDocument(employee,data,kind as any,"pdf",preview,blob=>{
+          items.push({kind,url:URL.createObjectURL(blob),mime:"application/pdf",name:`${kind}.pdf`});
+        });
+      }
+      closePair(); setPaired(items);
+    } catch(e) { for(const item of items) if(item.url.startsWith("blob:")) URL.revokeObjectURL(item.url); toast(errorMessage(e),"error"); }
+    finally { pairBusy.current=false; setBusy(false); }
+  }
+  async function downloadPair() {
+    if(!pairedRef.current.length || pairBusy.current) return;
+    pairBusy.current=true;
+    try {
+      const {default:JSZip}=await import("jszip"); const zip=new JSZip();
+      for(const item of pairedRef.current) {
+        const response=await fetch(item.url); if(!response.ok) throw new Error(`Could not download ${item.name}`);
+        zip.file(`${item.kind}/${item.name}`,await response.blob());
+      }
+      const url=URL.createObjectURL(await zip.generateAsync({type:"blob"}));
+      const a=document.createElement("a"); a.href=url; a.download="my-id-card-and-resume.zip"; a.click(); setTimeout(()=>URL.revokeObjectURL(url),30000);
+    } catch(e) { toast(errorMessage(e),"error"); } finally { pairBusy.current=false; }
+  }
+
   useEffect(
     () => () => {
       if (opened?.url.startsWith("blob:")) URL.revokeObjectURL(opened.url);
@@ -63,7 +113,8 @@ export default function ProfileDocuments({
     void qc.invalidateQueries({ queryKey: ["extended-profile", employee.id] });
     void qc.invalidateQueries({ queryKey: ["documents"] });
   };
-  async function generate(kind: string, format: "pdf" | "docx", view = false) {
+  async function generate(kind: string, format: "pdf" | "docx", view = false,style?:ResumeStyle) {
+    if(kind==="resume" && format==="pdf" && !view && !style) {setResumeStyleOpen(true);return;}
     setBusy(true);
     try {
       const { downloadProfileDocument } =
@@ -82,7 +133,10 @@ export default function ProfileDocuments({
                 mime: "application/pdf",
               })
           : undefined,
+        false,
+        style,
       );
+      if(style)setResumeStyleOpen(false);
     } catch (e) {
       toast(errorMessage(e), "error");
     } finally {
@@ -154,7 +208,8 @@ export default function ProfileDocuments({
     }
   }
   return (
-    <section className="profile-section">
+    <section className="profile-section" data-profile-documents={employee.id}>
+      {resumeStyleOpen && <ResumeStyleChooser employee={employee} data={data} busy={busy} onClose={()=>setResumeStyleOpen(false)} onDownload={style=>generate("resume","pdf",false,style)}/>}
       <h3>Profile documents</h3>
       <p className="muted">
         Professional documents are shared. Personal documents are visible only
@@ -223,6 +278,15 @@ export default function ProfileDocuments({
             );
           })}
       </div>
+      <Modal open={paired.length>0} onClose={closePair} title="My ID card and resume" wide className="profile-document-pair">
+        <button type="button" className="button secondary" onClick={()=>void downloadPair()}>Download both</button>
+        <div className="profile-document-pair-grid">
+          {paired.map(item=><section key={item.kind} role="dialog" aria-modal="false" aria-label={item.kind==="id_card"?"ID card":"Resume"}>
+            <h3>{item.kind==="id_card"?"ID card":"Resume"}</h3>
+            {item.mime.startsWith("image/") ? <img src={item.url} alt={item.name}/> : item.mime==="application/pdf" ? <iframe src={item.url} title={item.name}/> : <a href={item.url} target="_blank" rel="noreferrer">Open {item.name}</a>}
+          </section>)}
+        </div>
+      </Modal>
       <Modal
         open={!!opened}
         onClose={() => setOpened(null)}

@@ -1,4 +1,5 @@
 import tekzenitLogo from "../assets/images/tekzenit_logo.svg";
+import { rememberJarvisAction } from "../lib/jarvisUndo";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
   X,
@@ -198,6 +199,8 @@ export function Modal({
   description,
   children,
   wide = false,
+  className = "",
+  onReopen,
 }: {
   open: boolean;
   onClose: () => void;
@@ -205,12 +208,26 @@ export function Modal({
   description?: string;
   children: ReactNode;
   wide?: boolean;
+  className?: string;
+  onReopen?: () => void;
 }) {
+  const opener = useRef(document.activeElement as HTMLElement | null);
+  if (!open) opener.current = document.activeElement as HTMLElement | null;
   return (
-    <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
+    <Dialog.Root open={open} onOpenChange={(v) => { if (!v) {
+      const trigger = opener.current;
+      rememberJarvisAction(`closing ${title}`, onReopen || (trigger && trigger !== document.body ? () => {
+        if (!trigger.isConnected) throw new Error("Open the original page before restoring this dialog.");
+        trigger.click();
+      } : null));
+      onClose();
+    } }}>
       <Dialog.Portal>
         <Dialog.Overlay className="modal-overlay" />
-        <Dialog.Content className={`modal ${wide ? "modal--wide" : ""}`}>
+        <Dialog.Content className={`modal ${wide ? "modal--wide" : ""} ${className}`} onOpenAutoFocus={() => {
+          const focused = document.activeElement as HTMLElement | null;
+          if (focused && focused !== document.body && !focused.closest('[role="dialog"]')) opener.current = focused;
+        }}>
           <div className="modal-heading">
             <div>
               <Dialog.Title>{title}</Dialog.Title>

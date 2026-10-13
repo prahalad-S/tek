@@ -1,3 +1,4 @@
+import JiraTaskPanel from "./JiraTaskPanel";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Sparkles, ArrowUp, ShieldCheck, Check, Clock3 } from "lucide-react";
@@ -21,6 +22,7 @@ export default function Assistant({
   onClose: () => void;
 }) {
   const { preview } = useAuth();
+  const [mode, setMode] = useState<"time" | "jira">("time");
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [answer, setAnswer] = useState("");
@@ -66,6 +68,11 @@ export default function Assistant({
       title="A little help from Jarvis"
       description="Your thoughtful work assistant. You stay in control."
     >
+      <div className="assistant-suggestions">
+        <button disabled={busy || !!proposal} onClick={() => setMode("time")}>Time entry</button>
+        <button disabled={busy || !!proposal || preview} onClick={() => setMode("jira")}>Update Jira ticket</button>
+      </div>
+      {mode === "jira" ? <JiraTaskPanel /> : <>
       <div className="assistant-intro">
         <span className="assistant-orb">
           <Sparkles size={26} />
@@ -186,6 +193,7 @@ export default function Assistant({
         <ShieldCheck size={14} />
         No silent changes. No invented hours. No access beyond yours.
       </div>
+      </>}
     </Modal>
   );
 }

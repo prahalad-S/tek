@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ArrowUpRight, LockKeyhole, MessageSquare, MonitorUp, Paperclip, Phone, Search, Send, Smile, Users, Video, X } from "lucide-react";
 import { useAuth } from "../app/providers";
@@ -14,10 +14,11 @@ function PersonAvatar({ person, large = false }: { person: Employee; large?: boo
   return <span className={`teams-avatar teams-avatar--${color}${large ? " teams-avatar--large" : ""}`} aria-hidden="true">{initials(person.full_name)}</span>;
 }
 
-export default function Teams() {
+export default function Teams({ workflowDraft }: { workflowDraft?: { name: string; email: string; message: string } } = {}) {
   const { preview, profile } = useAuth();
   const [view, setView] = useState<"chat" | "studio">("chat");
   const [search, setSearch] = useState("");
+  const [localDraft, setLocalDraft] = useState("");
   const [department, setDepartment] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const query = useQuery({
@@ -30,7 +31,22 @@ export default function Teams() {
     const text = `${person.full_name} ${person.email} ${person.title} ${person.departments?.name ?? ""}`.toLowerCase();
     return text.includes(search.trim().toLowerCase()) && (!department || person.departments?.name === department);
   }), [people, search, department]);
-  const selected = people.find(person => person.id === selectedId) ?? people[0];
+  useEffect(() => {
+    if (!workflowDraft) return;
+    let index = 0;
+    const timer = setInterval(() => {
+      index += 3; setSearch(workflowDraft.name.slice(0, index));
+      setLocalDraft(workflowDraft.message.slice(0, Math.max(0,index-workflowDraft.name.length)));
+      if (index > workflowDraft.name.length + workflowDraft.message.length) clearInterval(timer);
+    }, 20);
+    return () => clearInterval(timer);
+  }, [workflowDraft]);
+  useEffect(() => {
+    if (!workflowDraft) return;
+    const person = people.find(p => p.email.toLowerCase() === workflowDraft.email.toLowerCase());
+    if (person) setSelectedId(person.id);
+  }, [people, workflowDraft]);
+  const selected = workflowDraft ? people.find(person => person.email.toLowerCase() === workflowDraft.email.toLowerCase()) : people.find(person => person.id === selectedId) ?? people[0];
 
   return <section className="teams-page" aria-labelledby="teams-page-title">
     <header className="teams-page-heading">
@@ -66,7 +82,7 @@ export default function Teams() {
       <section className="teams-conversation" aria-label={selected ? `Conversation with ${selected.full_name}` : "Conversation preview"}>
         <header className="teams-conversation-heading">
           <button type="button" className="teams-mobile-back icon-button" aria-label="Back to colleagues" onClick={() => setSelectedId(null)}><ArrowLeft size={19} /></button>
-          {selected ? <><PersonAvatar person={selected} /><div className="teams-contact-heading"><h2>{selected.full_name}</h2><p>{[selected.title, selected.departments?.name].filter(Boolean).join(" · ") || selected.email}</p></div></> : <div className="teams-contact-heading"><h2>Your conversations</h2><p>Select a colleague to get started.</p></div>}
+          {selected ? <><PersonAvatar person={selected} /><div className="teams-contact-heading"><h2>{selected.full_name}</h2><p>{[selected.title, selected.departments?.name].filter(Boolean).join(" · ") || selected.email}</p></div></> : <div className="teams-contact-heading"><h2>{workflowDraft ? `Draft for ${workflowDraft.name}` : "Your conversations"}</h2><p>{workflowDraft ? `${workflowDraft.email} — local preview only` : "Select a colleague to get started."}</p></div>}
           <div className="teams-call-actions"><button type="button" disabled aria-label="Video calls unavailable pending Microsoft approval" title="Video calls require Microsoft approval"><Video size={19} /></button><button type="button" disabled aria-label="Voice calls unavailable pending Microsoft approval" title="Voice calls require Microsoft approval"><Phone size={18} /></button></div>
         </header>
         <div className="teams-conversation-body">
@@ -80,7 +96,7 @@ export default function Teams() {
         </div>
         <div className="teams-composer-area">
           <div className="teams-permission-note"><span><LockKeyhole size={16} /></span><div><strong>Messaging is waiting for Microsoft approval</strong><p>You can browse colleagues now. Chats will be available once access is approved.</p></div></div>
-          <div className="teams-composer" aria-describedby="teams-composer-status"><textarea disabled aria-label="Message composer unavailable pending Microsoft approval" placeholder={selected ? `Message ${selected.full_name.split(" ")[0]}…` : "Write a message…"} rows={2} /><div className="teams-composer-toolbar"><div><button disabled type="button" aria-label="Attachments unavailable"><Paperclip size={18} /></button><button disabled type="button" aria-label="Emoji unavailable"><Smile size={18} /></button><span id="teams-composer-status">Messaging unavailable</span></div><button disabled type="button" className="teams-send" aria-label="Sending messages unavailable"><Send size={16} /><span>Send</span></button></div></div>
+          <div className="teams-composer" aria-describedby="teams-composer-status"><textarea disabled={!workflowDraft} value={workflowDraft ? localDraft : ""} onChange={e => setLocalDraft(e.target.value)} aria-label={workflowDraft ? "Local draft only — not sent" : "Message composer unavailable pending Microsoft approval"} placeholder={selected ? `Message ${selected.full_name.split(" ")[0]}…` : "Write a message…"} rows={2} /><div className="teams-composer-toolbar"><div><button disabled type="button" aria-label="Attachments unavailable"><Paperclip size={18} /></button><button disabled type="button" aria-label="Emoji unavailable"><Smile size={18} /></button><span id="teams-composer-status">{workflowDraft ? "Local draft — not sent" : "Messaging unavailable"}</span></div><button disabled type="button" className="teams-send" aria-label="Sending messages unavailable"><Send size={16} /><span>Send</span></button></div></div>
         </div>
       </section>
     </div>

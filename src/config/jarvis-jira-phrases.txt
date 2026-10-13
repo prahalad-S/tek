@@ -1,0 +1,50 @@
+# One accepted phrase per line. Lines starting with # are comments.
+# Fallback phrases supplement the built-in short-command recognition.
+# Each phrase means: add a task comment and move the selected issue to In Testing.
+# If the phrase says "issue has been fixed", that exact fixed comment is used.
+# Otherwise the last completed Jarvis editor task supplies the comment.
+# If no completed task exists, enter Task description in the Jira panel first.
+# Case, punctuation, extra spaces, and leading Jarvis/please are ignored.
+# Add full phrases as Jarvis hears them. Save this file and refresh the portal.
+# Do not put tokens, passwords or private information here.
+comment the issue has been fixed and change the status to interesting
+add comment the issue has been fixed and move the status to interesting
+add comment they issue has been fixed and more the status to interesting
+had commit the issue has been fixed and move the statistical interesting
+add comment that she has been fixed and move the statistical  interesting
+add comment the issue has been fixed and more the status to in testing
+add comment the issue has been fixed and move the status to intesting
+add comment and more the statistics in testing
+comment the issue has been fixed status to move in testing
+add comment they issue has been fixed and move the status to in testing
+add comment wish you has been fixed and more the status to interesting
+add comment they should be in fixed and move the statistical in testing
+add comment the issue has been fixed and move the status to in testing
+type comment the issue has been fixed and move the status to in testing
+write comment the issue has been fixed and move the status to in testing
+add comment the issue has been fixed and the studies to interesting
+add comment that you should be in fixed and Moda status to interesting
+do what you have today
+do what you have to day
+do what you have to do
+you know what to do
+you know what to do next
+add comment issue has been fixed
+lad common issue has been fixed
+lad common the issue has been fixed and move the status to in testing
+update in the dishes been fixed and move the studies to interesting
+update in the jira issue has been fixed and move the studies to 
+jeera Lo comment add chahiye
+jeera Lo comment adje
+add comments and move the status to in testing
+comment and more the status to interesting
+add comments and change status to intesting
+add comments and move status to testing
+add comments and move status to in testing
+add comments and move the status
+add comments  and more the status to interesting
+add comments and more the status to testing
+add comments and more the status to interesting
+update in jira
+add comments and update the status to in testing
+add comments and move status to interesting

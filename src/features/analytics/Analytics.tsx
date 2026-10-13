@@ -1,3 +1,4 @@
+import EmployeeMetricsPanel from "./EmployeeMetricsPanel";
 import { Link } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -333,9 +334,9 @@ export default function Analytics() {
                     ? p.employment
                     : sort === "projects"
                       ? p.assignments
-                          .map((asgn) => asgn.name)
-                          .sort()
-                          .join(", ")
+                        .map((asgn) => asgn.name)
+                        .sort()
+                        .join(", ")
                       : [...p.qualifications].sort().join(", ");
           const left = get(a).trim(),
             right = get(b).trim();
@@ -962,18 +963,6 @@ export default function Analytics() {
           <Bars values={locations} />
         </section>
 
-        {/* Qualifications */}
-        <section className="panel chart-panel">
-          <h2>Qualifications</h2>
-          <Bars
-            values={group(
-              people.flatMap((p) =>
-                p.qualifications.length ? p.qualifications : ["Not added"],
-              ),
-            )}
-          />
-        </section>
-
         {/* Project participation */}
         <section className="panel chart-panel">
           <h2>Project participation</h2>
@@ -992,13 +981,7 @@ export default function Analytics() {
         </section>
 
         {/* Employee experience chart */}
-        <section className="panel chart-panel employee-experience-panel">
-          <h2>Employee experience</h2>
-          <p className="muted">
-            Years of experience across {people.length} matching employees.
-          </p>
-          <EmployeeExperienceChart people={people} />
-        </section>
+        <EmployeeMetricsPanel people={all} renderExperience={selectedPeople => <EmployeeExperienceChart people={selectedPeople} />} />
       </div>
 
       {/* Employee Records Table */}

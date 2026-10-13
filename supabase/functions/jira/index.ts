@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { updateTicket, JiraActionError, ticketDetails } from "./actions.ts";
 
 const issueFields = ["summary", "status", "issuetype", "priority", "project", "updated"];
 
@@ -54,6 +55,19 @@ Deno.serve(async (req: Request) => {
   } = await supabase.auth.getUser();
   if (authError || !user) return reply(401, { error: "Session expired." });
 
+  let action: { action?: string; issueKey?: string; confirmed?: boolean; comment?: string; screenshot?: string } = {};
+  try {
+    const raw = await req.text();
+    if (raw.length > 3000000) return reply(413, { error: "Jira request is too large." });
+    action = raw ? JSON.parse(raw) : {};
+    if (!action || (action.action && !["list", "update-ticket", "details"].includes(action.action))) return reply(400, { error: "Unsupported Jira action." });
+  } catch { return reply(400, { error: "Invalid Jira request." }); }
+  if (action.action === "update-ticket" || action.action === "details") {
+    const owner = Deno.env.get("JIRA_OWNER_USER_ID");
+    if (!owner) return reply(503, { error: "Configure JIRA_OWNER_USER_ID in Supabase secrets before enabling Jira updates." });
+    if (owner !== user.id) return reply(403, { error: "Only the owner of this Jira connection can update tickets." });
+    if (action.action === "update-ticket" && action.confirmed !== true) return reply(400, { error: "Give Jarvis an explicit comment and status-change instruction first." });
+  }
   const baseUrl = Deno.env.get("JIRA_BASE_URL");
   const email = Deno.env.get("JIRA_EMAIL");
   const token = Deno.env.get("JIRA_API_TOKEN");
@@ -66,7 +80,7 @@ Deno.serve(async (req: Request) => {
       site.protocol !== "https:" ||
       site.pathname !== "/" ||
       site.search ||
-      site.hash
+      site.hash || site.username || site.password || !site.hostname.endsWith(".atlassian.net")
     )
       return reply(503, { error: "Jira connection is not configured." });
 
@@ -139,6 +153,10 @@ Deno.serve(async (req: Request) => {
         return reply(502, { error: "Jira could not verify the configured account." });
       account = await accountResponse.json();
     }
+    if (action.action === "details") return reply(200, await ticketDetails(apiBase, site, jiraHeaders, String(account?.accountId ?? ""), action.issueKey));
+    if (action.action === "update-ticket") {
+      return reply(200, await updateTicket(apiBase, site, jiraHeaders, String(account?.accountId ?? ""), action.issueKey, action.comment, action.screenshot));
+    }
     const searchResponse = await fetch(new URL("rest/api/3/search/jql", apiBase), {
       method: "POST",
       headers: jiraHeaders,
@@ -176,13 +194,14 @@ Deno.serve(async (req: Request) => {
     return reply(200, {
       connected: true,
       account: {
-        accountId: String(account.accountId || ""),
-        displayName: String(account.displayName || "Jira account"),
+        accountId: String(account?.accountId || ""),
+        displayName: String(account?.displayName || "Jira account"),
       },
       issues,
       syncedAt: new Date().toISOString(),
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof JiraActionError) return reply(error.status, { error: error.message });
     return reply(502, { error: "Jira connection failed. Check the server settings." });
   }
 });

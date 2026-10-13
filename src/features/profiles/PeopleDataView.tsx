@@ -1,3 +1,5 @@
+import { useState } from "react";
+import OrganisationChart from "./OrganisationChart";
 import type { Employee } from "../../lib/types";
 import { Avatar } from "../../components/ui";
 export default function PeopleDataView({
@@ -9,6 +11,7 @@ export default function PeopleDataView({
   view: string;
   onSelect: (employee: Employee) => void;
 }) {
+  const [orgOpen,setOrgOpen]=useState(false);
   const groups = Object.entries(
     people.reduce<Record<string, number>>((counts, person) => {
       const name = person.departments?.name || "Unassigned";
@@ -38,6 +41,7 @@ export default function PeopleDataView({
         <div>
           <h2>People by department</h2>
           <p>Based on your current filters.</p>
+          <button type="button" className="button secondary" onClick={()=>setOrgOpen(true)}>Organisation chart</button>
         </div>
         <div className="people-chart-body">
           <div
@@ -62,6 +66,7 @@ export default function PeopleDataView({
             ))}
           </ul>
         </div>
+        {orgOpen && <OrganisationChart people={people} onClose={()=>setOrgOpen(false)} onSelect={onSelect}/>}
       </section>
     );
   return (

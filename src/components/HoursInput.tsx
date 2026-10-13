@@ -1,5 +1,5 @@
 import { useState } from "react";
-export default function HoursInput({ initial = 1 }: { initial?: number }) {
+export default function HoursInput({ initial = 1, precise = false, readOnly = false }: { initial?: number; precise?: boolean; readOnly?: boolean }) {
   const [value, setValue] = useState(String(initial));
   const num = Number(value);
   return (
@@ -8,6 +8,7 @@ export default function HoursInput({ initial = 1 }: { initial?: number }) {
         Hours preset
         <select
           aria-label="Hours preset"
+          disabled={readOnly}
           value={
             Number.isInteger(num) && num >= 1 && num <= 8
               ? String(num)
@@ -34,9 +35,10 @@ export default function HoursInput({ initial = 1 }: { initial?: number }) {
         <input
           name="hours"
           type="number"
-          min="0.25"
+          min={precise ? 1 / 60 : 0.25}
           max="24"
-          step="0.25"
+          step={precise ? "any" : "0.25"}
+          readOnly={readOnly}
           value={value}
           required
           onChange={(e) => setValue(e.target.value)}

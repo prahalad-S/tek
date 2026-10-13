@@ -14,6 +14,7 @@ import Login, { PasswordPage } from "./features/Login";
 const Analytics = lazy(()=>import("./features/Insights").then(m=>({default:m.Analytics})));
 const Maps = lazy(()=>import("./features/Insights").then(m=>({default:m.Maps})));
 const People = lazy(() => import("./features/People"));
+const Editor = lazy(() => import("./features/Editor"));
 const Teams = lazy(() => import("./features/Teams"));
 const Home = lazy(() => import("./features/Home"));
 const Timesheets = lazy(() => import("./features/Timesheets"));
@@ -48,6 +49,7 @@ function pages() {
       <Route path="home" element={<Home />} />
       <Route path="people" element={<People />} />
       <Route path="teams" element={<Teams />} />
+      <Route path="editor" element={<Editor />} />
       <Route path="timesheets" element={<Timesheets />} />
       <Route path="calendar" element={<Calendar />} />
       <Route path="projects" element={<Projects />} />

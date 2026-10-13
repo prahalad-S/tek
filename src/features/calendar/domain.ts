@@ -1,5 +1,5 @@
 import { dateKey, weekStart, weekDays } from "../../lib/domain";
-export type CalendarView = "week" | "month" | "year";
+export type CalendarView = "day" | "week" | "month" | "year";
 export function addDays(date: string, days: number) {
   const d = new Date(`${date}T12:00:00`);
   d.setDate(d.getDate() + days);
@@ -7,6 +7,7 @@ export function addDays(date: string, days: number) {
 }
 export function calendarRange(anchor: string, view: CalendarView) {
   const d = new Date(`${anchor}T12:00:00`);
+  if (view === "day") return { from: anchor, to: anchor };
   if (view === "year")
     return { from: `${d.getFullYear()}-01-01`, to: `${d.getFullYear()}-12-31` };
   if (view === "week") {
@@ -32,7 +33,7 @@ export function shiftAnchor(anchor: string, view: CalendarView, delta: number) {
   const d = new Date(`${anchor}T12:00:00`);
   if (view === "year") d.setFullYear(d.getFullYear() + delta, 0, 1);
   else if (view === "month") d.setMonth(d.getMonth() + delta, 1);
-  else d.setDate(d.getDate() + delta * 7);
+  else d.setDate(d.getDate() + delta * (view === "day" ? 1 : 7));
   return dateKey(d);
 }
 export type CalendarEntry = {

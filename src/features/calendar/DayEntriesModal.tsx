@@ -145,6 +145,7 @@ export default function DayEntriesModal({
               <button
                 type="button"
                 className="day-modal-add-btn"
+                data-jarvis-add-entry
                 onClick={onAddEntry}
               >
                 <Plus size={15} />

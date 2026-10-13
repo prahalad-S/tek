@@ -1,9 +1,11 @@
+import ProjectActivitySparkline from "./ProjectActivitySparkline";
+import ProjectPlanning from "./ProjectPlanning";
 import { useCardReflow } from "../components/useCardReflow";
 import { ProjectAvatars, useProjectAvatars } from "./ProjectAvatars";
 import { useSearchParams } from "react-router-dom";
 import { client } from "../lib/supabase";
 import ProjectTeam from "./ProjectTeam";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Plus,
@@ -28,7 +30,7 @@ import {
 } from "../components/ui";
 export default function Projects() {
   const { preview, member, profile } = useAuth();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const avatarPeople = useProjectAvatars(preview);
   const scope = params.get("scope");
   const assignments = useQuery({
@@ -58,14 +60,31 @@ export default function Projects() {
     queryKey: ["projects", preview],
     queryFn: () => (preview ? Promise.resolve(previewProjects) : projects()),
   });
-  const [view, setView] = useState("grid");
+  const [view, setView] = useState(params.get("view") === "list" ? "list" : "grid");
+  useEffect(() => { const next = params.get("view"); if (next === "grid" || next === "list") setView(next); }, [params]);
   const { reflow } = useCardReflow(".project-grid [data-project-id]");
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Project | null>(null);
+  const planningId=params.get("planning");
+  const planningProject=q.data?.find(p=>p.id===planningId) || null;
+  function showPlanning(id:string|null) {const next=new URLSearchParams(params); if(id) next.set("planning",id); else next.delete("planning");setParams(next);}
   const [busy, setBusy] = useState(false);
   const toast = useToast();
   const qc = useQueryClient();
-  const manage = member?.role !== "employee";
+  const manage = member?.role === "admin" || member?.role === "manager";
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  useEffect(() => { setConfirmDelete(false); }, [open, selected?.id]);
+  async function deleteProject() {
+    if (!selected || !manage) return;
+    if (preview) { toast("Preview only. Sign in to delete a project."); return; }
+    setBusy(true);
+    try {
+      await rpc("delete_project", { p_project: selected.id });
+      await Promise.all(["projects", "project-team", "project-avatars", "project-scopes"].map(key => qc.invalidateQueries({ queryKey: [key] })));
+      setOpen(false); setSelected(null); toast("Project deleted.");
+    } catch (error) { toast((error as { code?: string })?.code === "PGRST202" ? "The workspace needs the project management update before projects can be deleted." : errorMessage(error), "error"); }
+    finally { setBusy(false); }
+  }
   return (
     <>
       <PageHeader
@@ -97,6 +116,7 @@ export default function Projects() {
                 </button>
               ))}
             </div>
+            <button type="button" className={`button ${planningId==="all"?"":"secondary"}`} aria-pressed={planningId==="all"} onClick={()=>showPlanning("all")}>All projects</button>
             {manage && (
               <button
                 className="button"
@@ -123,6 +143,10 @@ export default function Projects() {
           title="Room for your next idea"
           description="Your administrator or manager can create your first project."
         />
+      ) : planningId ? (
+        avatarPeople.isPending ? <Loading/> : avatarPeople.error ? <ErrorState error={avatarPeople.error}/> : planningId!=="all" && !planningProject ? <EmptyState title="Project unavailable" description="Return to the project cards and select an available project."/> :
+        <ProjectPlanning projects={q.data} selected={planningProject} people={avatarPeople.data?.people || []} members={avatarPeople.data?.members || []} preview={preview}
+          onBack={()=>showPlanning(null)} onSelect={p=>showPlanning(p?.id || "all")} onManage={p=>{setSelected(p);setOpen(true);}}/>
       ) : (
         <div
           className={`project-grid ${view === "list" ? "project-grid--list" : ""}`}
@@ -135,8 +159,7 @@ export default function Projects() {
                 key={p.id}
                 data-project-id={p.id}
                 onClick={() => {
-                  setSelected(p);
-                  setOpen(true);
+                  showPlanning(p.id);
                 }}
               >
                 <div className="project-top">
@@ -164,9 +187,10 @@ export default function Projects() {
                       .join(" · ")}
                   </p>
                 )}
-                <p className="project-description">
-                  {p.description || "A new project, full of possibility."}
-                </p>
+                <div className="project-card-activity-row">
+                  <p className="project-description">{p.description || "A new project, full of possibility."}</p>
+                  <ProjectActivitySparkline projectId={p.id}/>
+                </div>
                 {preview && (
                   <p className="project-meta">
                     Demo work ·{" "}
@@ -315,7 +339,13 @@ export default function Projects() {
               ))}
           </section>
         )}
-        {selected && <ProjectTeam projectId={selected.id} manage={manage} />}
+        {selected && <ProjectTeam key={selected.id} projectId={selected.id} manage={manage} />}
+        {selected && manage && <section className="project-delete-actions">
+          {confirmDelete ? <><p>Delete “{selected.name}” and its team assignments? This cannot be undone. Projects with recorded time must be marked completed instead.</p>
+            <button type="button" className="button secondary" disabled={busy} onClick={() => setConfirmDelete(false)}>Keep project</button>{" "}
+            <button type="button" className="button danger" disabled={busy} onClick={() => void deleteProject()}>{busy ? "Deleting…" : "Confirm delete project"}</button>
+          </> : <button type="button" className="button secondary" disabled={busy} onClick={() => setConfirmDelete(true)}>Delete project</button>}
+        </section>}
       </Modal>
     </>
   );

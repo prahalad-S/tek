@@ -1,3 +1,4 @@
+import { MapPin, Heart, CalendarDays, Search } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "../../app/providers";
 import { rpc } from "../../lib/api";
@@ -20,6 +21,15 @@ export default function SharedCalendar({
   const { preview, member, profile } = useAuth();
   const toast = useToast();
   const [holidayLocation, setHolidayLocation] = useState("");
+  const [filterKind,setFilterKind]=useState("");
+  const [category,setCategory]=useState("");
+  const [search,setSearch]=useState("");
+  const [upcoming,setUpcoming]=useState(false);
+  const [favorites,setFavorites]=useState<string[]>([]);
+  const allItems=[...events.map(item=>({...item,itemKind:"event",date:dateKey(new Date(item.starts_at))})),...holidays.map(item=>({...item,itemKind:"holiday",date:item.day}))].sort((a,b)=>a.date.localeCompare(b.date));
+  const categoryOptions=[...new Set(allItems.map(i=>i.category || (i.itemKind==="holiday"?"Holiday":"Event")))].sort();
+  const locations=[...new Set(["USA","INDIA","SYMBIOSYS",...allItems.flatMap(i=>i.locations?.length?i.locations:i.location?[i.location]:[])])].sort();
+  const filtered=allItems.filter(item=>(!filterKind || item.itemKind===filterKind)&&(!category || (item.category || (item.itemKind==="holiday"?"Holiday":"Event"))===category)&&(!holidayLocation || (!item.locations?.length&&!item.location) || (item.locations || [item.location]).some((l:string)=>l.toLowerCase()===holidayLocation.toLowerCase()))&&(!upcoming || item.date>=dateKey(new Date()))&&`${item.name} ${item.description||""} ${item.location||""} ${(item.locations||[]).join(" ")}`.toLowerCase().includes(search.toLowerCase()));
   const [editing, setEditing] = useState<any>(null);
   const [kind, setKind] = useState("event");
   const [busy, setBusy] = useState(false);
@@ -52,21 +62,15 @@ export default function SharedCalendar({
       title="Events & holidays"
       description="Shared items for the selected calendar range. Managers publish to their department; administrators can publish company-wide."
       wide
+      className="events-holidays-modal"
     >
-      {!editing && (
-        <label>
-          Holiday location
-          <select
-            value={holidayLocation}
-            onChange={(e) => setHolidayLocation(e.target.value)}
-          >
-            <option value="">All locations</option>
-            <option>USA</option>
-            <option>INDIA</option>
-            <option>SYMBIOSYS</option>
-          </select>
-        </label>
-      )}
+      {!editing && <div className="events-filter-bar">
+        <label>Topics<select value={category} onChange={e=>setCategory(e.target.value)}><option value="">All topics</option>{categoryOptions.map(c=><option key={c}>{c}</option>)}</select></label>
+        <label>Type<select value={filterKind} onChange={e=>setFilterKind(e.target.value)}><option value="">Events & holidays</option><option value="event">Events</option><option value="holiday">Holidays</option></select></label>
+        <label>Location<select value={holidayLocation} onChange={e=>setHolidayLocation(e.target.value)}><option value="">All locations</option>{locations.map(l=><option key={l}>{l}</option>)}</select></label>
+        <label className="events-search"><Search size={16}/><input aria-label="Search events and holidays" placeholder="Search name or location…" value={search} onChange={e=>setSearch(e.target.value)}/></label>
+        <label className="events-upcoming"><input type="checkbox" checked={upcoming} onChange={e=>setUpcoming(e.target.checked)}/>Upcoming only</label>
+      </div>}
       {editing ? (
         <form
           onSubmit={async (event) => {
@@ -250,78 +254,19 @@ export default function SharedCalendar({
               Add event or holiday
             </button>
           )}
-          {[
-            { kind: "event", rows: events },
-            {
-              kind: "holiday",
-              rows: holidays.filter(
-                (h) =>
-                  !holidayLocation ||
-                  !h.locations?.length ||
-                  h.locations.includes(holidayLocation),
-              ),
-            },
-          ].map((group) => (
-            <section className="profile-section" key={group.kind}>
-              <h3>{group.kind === "event" ? "Events" : "Holidays"}</h3>
-              {group.rows.length ? (
-                group.rows.map((item) => (
-                  <article className="career-row" key={item.id}>
-                    <h4>{item.name}</h4>
-                    <p>
-                      {item.day || new Date(item.starts_at).toLocaleString()}
-                    </p>
-                    <p>{item.description}</p>
-                    <p>
-                      {[
-                        item.locations?.join(" / "),
-                        item.location,
-                        item.organizer,
-                        item.participants,
-                        item.category,
-                        item.event_type || item.holiday_type,
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </p>
-                    <Badge>
-                      {item.department_id ? "Department" : "Company"}
-                    </Badge>
-                    <Badge>{item.status}</Badge>
-                    {manage &&
-                      (member?.role === "admin" ||
-                        item.department_id === member?.department_id) && (
-                        <div className="row-actions">
-                          <button
-                            className="button secondary small"
-                            onClick={() => {
-                              setKind(group.kind);
-                              setEditing(item);
-                            }}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            className="button secondary small"
-                            onClick={() =>
-                              setDeleting({
-                                id: item.id,
-                                kind: group.kind,
-                                name: item.name,
-                              })
-                            }
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      )}
-                  </article>
-                ))
-              ) : (
-                <p className="muted">None in this period.</p>
-              )}
-            </section>
-          ))}
+          <div className="events-card-grid">
+            {filtered.map((item,index)=>{
+              const date=new Date(item.date+"T12:00:00"); const id=`${item.itemKind}:${item.id}`;
+              return <article className={`event-date-card event-tone-${index%6}`} key={id}>
+                <div className="event-date-sheet"><div className="event-date-month">{date.toLocaleDateString(undefined,{month:"short"})}</div><strong>{date.getDate()}</strong><small>{date.toLocaleDateString(undefined,{month:"short",day:"numeric"})}{item.ends_at && dateKey(new Date(item.ends_at))!==item.date?` – ${new Date(item.ends_at).toLocaleDateString(undefined,{month:"short",day:"numeric"})}`:""}</small><small>{date.getFullYear()}</small></div>
+                <div className="event-card-content"><button type="button" className="icon-button event-favorite" aria-label={`${favorites.includes(id)?"Unsave":"Save"} ${item.name}`} aria-pressed={favorites.includes(id)} onClick={()=>setFavorites(previous=>previous.includes(id)?previous.filter(v=>v!==id):[...previous,id])}><Heart size={18} fill={favorites.includes(id)?"currentColor":"none"}/></button><h3>{item.name}</h3><span className="event-category">{item.category || (item.itemKind==="holiday"?"Holiday":item.event_type || "Event")}</span>{item.description && <p>{item.description}</p>}<div className="event-card-location"><MapPin size={15}/><span>{item.locations?.join(" / ") || item.location || "Company-wide"}</span></div><div className="event-card-footer"><Badge>{item.status || (item.itemKind==="holiday"?"Active":"Scheduled")}</Badge>{item.organizer && <small>{item.organizer}</small>}</div>
+                  {manage && (member?.role==="admin" || item.department_id===member?.department_id) && <div className="row-actions"><button className="text-button" onClick={()=>{setKind(item.itemKind);setEditing(item);}}>Edit</button><button className="text-button" onClick={()=>setDeleting({id:item.id,kind:item.itemKind,name:item.name})}>Delete</button></div>}
+                </div>
+              </article>;
+            })}
+          </div>
+          {!filtered.length && <div className="events-empty"><CalendarDays size={28}/><h3>No events or holidays match</h3><p>Try another filter or choose a different calendar period.</p></div>}
+          <p className="muted">{filtered.length} items in the selected calendar period · Saved hearts stay in this view only.</p>
         </>
       )}
       {deleting && (

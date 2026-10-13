@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from "react";
+import authStoryVideo from "../assets/jarvis/ad.mp4";
+import { useState, useEffect, useRef, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
@@ -21,8 +22,27 @@ export default function Login() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const loginForm = useRef<HTMLFormElement>(null);
+  const loginRequest=useRef(Number(sessionStorage.getItem("jarvis-login-once")));
+  useEffect(()=>{
+    const requested=loginRequest.current;
+    sessionStorage.removeItem("jarvis-login-once");
+    if(!requested || Date.now()-requested>30000) return;
+    setMessage("Jarvis will try signing in once in 3 seconds if your browser fills both credentials.");
+    const timer=setTimeout(()=>{
+      const form=loginForm.current;
+      const mail=form?.querySelector<HTMLInputElement>('input[type="email"]');
+      const pass=form?.querySelector<HTMLInputElement>('input[autocomplete="current-password"]');
+      if(mail?.value && pass?.value) form?.requestSubmit();
+      else setMessage("Your browser did not fill both credentials. Please sign in manually.");
+    },3000);
+    return ()=>clearTimeout(timer);
+  },[]);
   async function submit(e: FormEvent) {
     e.preventDefault();
+    const form=e.currentTarget as HTMLFormElement;
+    const enteredEmail=form.querySelector<HTMLInputElement>('input[type="email"]')?.value || email;
+    const enteredPassword=form.querySelector<HTMLInputElement>('input[autocomplete="current-password"]')?.value || password;
     setBusy(true);
     setError("");
     setMessage("");
@@ -37,8 +57,8 @@ export default function Login() {
         );
       } else if (mode === "signup") {
         const { data, error } = await client().auth.signUp({
-          email: email.trim().toLowerCase(),
-          password,
+          email: enteredEmail.trim().toLowerCase(),
+          password: enteredPassword,
           options: { emailRedirectTo: `${location.origin}/home` },
         });
         if (error) throw error;
@@ -49,8 +69,8 @@ export default function Login() {
           );
       } else {
         const { error } = await client().auth.signInWithPassword({
-          email: email.trim().toLowerCase(),
-          password,
+          email: enteredEmail.trim().toLowerCase(),
+          password: enteredPassword,
         });
         if (error) throw error;
         navigate("/home");
@@ -74,7 +94,9 @@ export default function Login() {
       >
         <ArrowLeft size={20} />
       </button>
-      <section className="auth-story">
+      <section className="auth-story auth-story--video">
+        <video className="auth-story-video" src={authStoryVideo} autoPlay muted loop playsInline preload="metadata" aria-hidden="true" />
+        <div className="auth-story-video-shade" aria-hidden="true" />
         <Brand />
         <div className="auth-story-content">
           <span className="eyebrow">ROOM FOR YOUR BEST WORK</span>
@@ -131,7 +153,7 @@ export default function Login() {
               connected.
             </div>
           )}
-          <form onSubmit={submit}>
+          <form ref={loginForm} onSubmit={submit}>
             <label>
               Work email
               <input

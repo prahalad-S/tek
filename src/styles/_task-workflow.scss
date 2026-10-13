@@ -1,0 +1,57 @@
+.task-timeline { width: 100%; min-height: 480px; padding: 18px 24px; align-self: stretch; color: var(--text); background: var(--surface); overflow: auto; font-size: 13px; }
+.task-timeline header { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
+.task-phase { position: relative; overflow: hidden; border: 1px solid var(--border); border-radius: 7px; padding: 9px 13px; background: var(--accent); color: white; isolation: isolate; }
+.task-phase.is-running::before { content: ""; position: absolute; inset: 0; background: #ffffff40; transform-origin: left; animation: task-fill 1.2s ease-in-out infinite alternate; z-index: -1; }
+@keyframes task-fill { from { transform: scaleX(.5); } to { transform: scaleX(1); } }
+.task-timeline ol { list-style: none; padding: 0; margin: 0; }
+.task-step { display: flex; align-items: baseline; gap: 12px; padding: 7px 0; line-height: 1.6; }
+.task-step::before { content: ""; width: 10px; height: 10px; flex: 0 0 10px; border-radius: 50%; background: var(--border-strong, #d6d7db); }
+.task-step.depth-1 { margin-left: 24px; position: relative; }
+.task-step.depth-1::before { width: 6px; height: 6px; flex-basis: 6px; background: transparent; border: 1px solid var(--text-secondary); }
+.task-step.depth-1::after { content: ""; position: absolute; top: -5px; bottom: calc(100% - 15px); left: 3px; border-left: 1px solid var(--border-strong); }
+.task-step img { display: inline-block; width: 19px; height: 19px; vertical-align: middle; margin-left: 9px; }
+.task-step a { font-size: 12px; color: var(--accent); }
+.task-dots { display: inline-block; width: 18px; overflow: hidden; vertical-align: bottom; animation: task-dots 1s steps(4) infinite; }
+@keyframes task-dots { from { width: 0; } to { width: 18px; } }
+.task-warning { color: #cf7c19; font-weight: 700; margin-left: 8px; }
+.status-error .task-warning { color: #dc4055; }
+.task-countdown { display: inline-block; margin-left: 8px; padding: 0 5px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); font-variant-numeric: tabular-nums; }
+.task-issue { color: var(--text-secondary); font-size: 12px; margin: 0 0 16px; }
+.task-mail { padding: 20px; overflow: auto; height: 100%; color: var(--text); background: var(--surface); }
+.task-mail h2 { font-size: 20px; display: flex; justify-content: space-between; align-items: center; margin: 0 0 24px; }
+.task-mail h2 small { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
+.task-mail > input { width: 100%; margin-bottom: 18px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; color: var(--text); background: var(--surface); font: inherit; }
+.task-rich-editor { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.task-mail-toolbar { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); padding: 8px; }
+.task-mail-toolbar button { background: transparent; border: 0; padding: 8px; color: var(--text-secondary); }
+.task-mail-toolbar label { margin-left: auto; position: relative; border: 1px solid var(--border); border-radius: 8px; padding: 9px; cursor: pointer; }
+.task-mail-toolbar input { position: absolute; inset: 0; opacity: 0; width: 100%; cursor: pointer; }
+.task-rich-editor [contenteditable] { min-height: 290px; padding: 24px; outline: none; line-height: 1.8; white-space: pre-wrap; color: var(--text-secondary); font-size: 14px; }
+.task-mail-shot { display: block; max-width: calc(100% - 48px); max-height: 170px; object-fit: contain; margin: 0 24px 20px; }
+.task-mail > small { display: block; color: var(--text-secondary); font-size: 11px; }
+.task-mail footer { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 24px; }
+.task-mail .muted { font-size: 12px; }
+.task-calendar-preview { padding: 16px; overflow: auto; }
+.task-typed-field { min-height: 42px; border: 1px solid var(--border); border-radius: 8px; padding: 10px; white-space: pre-wrap; }
+.editor-code > .teams-page { padding: 12px; overflow: auto; height: 100%; }
+.editor-code > .teams-page .teams-workspace { min-width: 650px; }
+@media (prefers-reduced-motion: reduce) { .task-dots, .task-phase.is-running::before { animation: none; } }
+
+// Independent, usable scroll areas while file editing is locked.
+.editor-code > .task-mail { flex: 1 1 0; min-height: 0; height: auto; box-sizing: border-box; }
+.editor-preview-stage > .task-timeline { flex: 1 1 0; min-width: 0; min-height: 0; max-height: 100%; box-sizing: border-box; }
+.task-mail, .task-timeline { overscroll-behavior: auto; scrollbar-gutter: stable; }
+.editor-files { min-height: 0; overflow: auto; }
+
+.jarvis-task-cursor { position: fixed; top: 0; left: 0; z-index: 5000; pointer-events: none; color: var(--accent); font-size: 30px; text-shadow: 0 0 3px white; filter: drop-shadow(0 2px 3px #0008); }
+
+.task-countdown { animation: task-countdown-number 0.35s ease-out both; }
+@keyframes task-countdown-number { from { opacity: 0; transform: translateY(-5px) scale(1.25); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .task-countdown { animation: none; } }
+
+.task-mail { transition: opacity 2s ease; }
+.task-mail.is-fading { opacity: 0; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .task-mail { transition: none; } }
+
+.jarvis-calendar-approval { position: fixed; z-index: 5001; top: 20px; left: 50%; transform: translateX(-50%); width: min(460px, calc(100vw - 32px)); padding: 18px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); color: var(--text); box-shadow: 0 12px 40px #0003; }
+.jarvis-calendar-approval .button + .button { margin-left: 8px; }

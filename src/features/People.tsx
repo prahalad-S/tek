@@ -246,7 +246,115 @@ export default function People() {
           </div>
           <div className="people-heading-tools">
             {" "}
-            <div className="experience-filter">
+           <div className="directory-controls">
+              <div className="sort-buttons" aria-label="Sort people">
+                {[
+                  { id: "name", label: "Ascending", Icon: ArrowDownAZ },
+                  { id: "z", label: "Descending", Icon: ArrowUpAZ },
+                  { id: "random", label: "Random", Icon: Shuffle },
+                  { id: "default", label: "Default order", Icon: ListOrdered },
+                ].map(({ id, label, Icon }) => (
+                  <button
+                    key={id}
+                    className="icon-button"
+                    aria-label={label}
+                    title={label}
+                    aria-pressed={sort === id}
+                    onClick={() =>
+                      reflow(() => {
+                        resetSelection();
+                        if (id === "random")
+                          setRandomOrder(
+                            Object.fromEntries(
+                              all.map((p) => [p.id, Math.random()]),
+                            ),
+                          );
+                        setSort(id);
+                      })
+                    }
+                  >
+                    <Icon size={18} />
+                  </button>
+                ))}
+                 <button
+                className="icon-button"
+                aria-label="Reset all filters"
+                title="Reset all filters"
+                onClick={resetFilters}
+              >
+                <FilterX size={18} />
+              </button>
+              </div>
+             
+              <div className="view-toggle">
+                <button
+                  aria-label="Card view"
+                  aria-pressed={view === "grid"}
+                  onClick={() =>
+                    reflow(() => {
+                      resetSelection();
+                      setView("grid");
+                    })
+                  }
+                >
+                  <LayoutGrid size={18} />
+                </button>
+                <button
+                  aria-label="List view"
+                  aria-pressed={view === "list"}
+                  onClick={() =>
+                    reflow(() => {
+                      resetSelection();
+                      setView("list");
+                    })
+                  }
+                >
+                  <List size={18} />
+                </button>
+                {[
+                  { id: "table", label: "Table view", Icon: Table2 },
+                  { id: "chart", label: "Chart view", Icon: ChartPie },
+                ].map(({ id, label, Icon }) => (
+                  <button
+                    key={id}
+                    aria-label={label}
+                    title={label}
+                    aria-pressed={view === id}
+                    onClick={() => {
+                      resetSelection();
+                      setView(id);
+                    }}
+                  >
+                    <Icon size={18} />
+                  </button>
+                ))}
+              </div>
+              {" "}
+           
+            {member?.role === "admin" && (
+              <Link
+                className="icon-button people-add"
+                aria-label="Add employee"
+                title="Add employee"
+                to={`${preview ? "/preview" : ""}/access?new=1`}
+              >
+                <Plus size={18} />
+              </Link>
+            )}
+            {member?.role === "admin" && (
+              <Link
+                className="icon-button people-delete"
+                aria-label="Delete employee"
+                title="Delete employee"
+                to={`${preview ? "/preview" : ""}/access?delete=1`}
+              >
+                <Trash2 size={18} />
+              </Link>
+            )}
+            </div>
+            <div className="directory-toolbar">
+              {" "}
+                <div className="experience-filter">
               <label htmlFor="experience-range">
                 <strong className="sr-only">
                   {minimumExperience === 0
@@ -272,8 +380,6 @@ export default function People() {
               />
               <span>0 – {maximumExperience} years</span>
             </div>
-            <div className="directory-toolbar">
-              {" "}
               <div className="search-field">
                 <Search size={18} />
                 <input
@@ -350,110 +456,7 @@ export default function People() {
                 <option value="left">Left</option>
                 <option value="terminated">Terminated</option>
               </select>
-            </div>{" "}
-            <div className="directory-controls">
-              <div className="sort-buttons" aria-label="Sort people">
-                {[
-                  { id: "name", label: "Ascending", Icon: ArrowDownAZ },
-                  { id: "z", label: "Descending", Icon: ArrowUpAZ },
-                  { id: "random", label: "Random", Icon: Shuffle },
-                  { id: "default", label: "Default order", Icon: ListOrdered },
-                ].map(({ id, label, Icon }) => (
-                  <button
-                    key={id}
-                    className="icon-button"
-                    aria-label={label}
-                    title={label}
-                    aria-pressed={sort === id}
-                    onClick={() =>
-                      reflow(() => {
-                        resetSelection();
-                        if (id === "random")
-                          setRandomOrder(
-                            Object.fromEntries(
-                              all.map((p) => [p.id, Math.random()]),
-                            ),
-                          );
-                        setSort(id);
-                      })
-                    }
-                  >
-                    <Icon size={18} />
-                  </button>
-                ))}
-              </div>
-              <button
-                className="icon-button"
-                aria-label="Reset all filters"
-                title="Reset all filters"
-                onClick={resetFilters}
-              >
-                <FilterX size={18} />
-              </button>
-              <div className="view-toggle">
-                <button
-                  aria-label="Card view"
-                  aria-pressed={view === "grid"}
-                  onClick={() =>
-                    reflow(() => {
-                      resetSelection();
-                      setView("grid");
-                    })
-                  }
-                >
-                  <LayoutGrid size={18} />
-                </button>
-                <button
-                  aria-label="List view"
-                  aria-pressed={view === "list"}
-                  onClick={() =>
-                    reflow(() => {
-                      resetSelection();
-                      setView("list");
-                    })
-                  }
-                >
-                  <List size={18} />
-                </button>
-                {[
-                  { id: "table", label: "Table view", Icon: Table2 },
-                  { id: "chart", label: "Chart view", Icon: ChartPie },
-                ].map(({ id, label, Icon }) => (
-                  <button
-                    key={id}
-                    aria-label={label}
-                    title={label}
-                    aria-pressed={view === id}
-                    onClick={() => {
-                      resetSelection();
-                      setView(id);
-                    }}
-                  >
-                    <Icon size={18} />
-                  </button>
-                ))}
-              </div>
             </div>
-            {member?.role === "admin" && (
-              <Link
-                className="icon-button people-add"
-                aria-label="Add employee"
-                title="Add employee"
-                to={`${preview ? "/preview" : ""}/access?new=1`}
-              >
-                <Plus size={18} />
-              </Link>
-            )}
-            {member?.role === "admin" && (
-              <Link
-                className="icon-button people-delete"
-                aria-label="Delete employee"
-                title="Delete employee"
-                to={`${preview ? "/preview" : ""}/access?delete=1`}
-              >
-                <Trash2 size={18} />
-              </Link>
-            )}
           </div>
         </header>
         {q.isPending ? (

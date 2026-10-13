@@ -1,6 +1,7 @@
+import { automationClick, automationWait, type CalendarAutomationDraft } from "../../lib/jarvisUiAutomation";
 import { previewCalendarCommand } from "./previewCalendar";
 import LeaveSending from "../../components/LeaveSending";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../app/providers";
 import { rpc } from "../../lib/api";
 import { parseMinutes, errorMessage } from "../../lib/domain";
@@ -23,6 +24,7 @@ export default function EntryEditor({
   people,
   projects,
   selectedUser,
+  automation,
 }: {
   editing: EditingEntry;
   onClose: () => void;
@@ -32,6 +34,7 @@ export default function EntryEditor({
   people: Employee[];
   projects: Project[];
   selectedUser: string;
+  automation?: { draft: CalendarAutomationDraft; signal: AbortSignal; onReady: (error?: Error) => void };
 }) {
   const { preview, member, profile } = useAuth();
   const [kind, setKind] = useState(
@@ -40,6 +43,39 @@ export default function EntryEditor({
   const [busy, setBusy] = useState(false);
   const toast = useToast();
   const manage = member?.role !== "employee";
+  const [formNode, setFormNode] = useState<HTMLFormElement | null>(null);
+  const automationCallback = useRef(automation?.onReady);
+  const [typedDescription,setTypedDescription] = useState("");
+  const [selectedProject,setSelectedProject] = useState("");
+  automationCallback.current = automation?.onReady;
+  const [hoursFilled, setHoursFilled] = useState(false), [automationReady, setAutomationReady] = useState(false);
+  const submitted = useRef(false);
+  useEffect(() => {
+    if (!automation || !formNode) return;
+    const local = new AbortController(), signal = AbortSignal.any([automation.signal,local.signal]);
+    const draft = automation.draft;
+    void (async () => {
+      const form = formNode;
+      const project = form.querySelector<HTMLSelectElement>('[name="project"]');
+      const description = form.querySelector<HTMLTextAreaElement>('[name="description"]');
+      if (!project || !description || !Array.from(project.options).some(option => option.value === draft.projectId)) throw new Error("The Jira project is not available in the calendar dropdown.");
+      await automationClick(project,signal); setSelectedProject(draft.projectId);
+      await automationClick(description,signal); description.focus();
+      for (let length=0;length<draft.description.length;length+=2) {
+        setTypedDescription(draft.description.slice(0,length+2));
+        description.scrollTop = description.scrollHeight; await automationWait(35,signal);
+      }
+      setHoursFilled(true); await automationWait(100,signal);
+      const hours = form.querySelector<HTMLInputElement>('[name="hours"]');
+      if (hours) await automationClick(hours,signal);
+      setAutomationReady(true); await automationWait(100,signal);
+      const save = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+      if (!save) throw new Error("The calendar save button is unavailable.");
+      await automationClick(save,signal);
+    })().catch(error => { if (!signal.aborted) automationCallback.current?.(error instanceof Error ? error : new Error("Calendar automation failed")); });
+    return () => local.abort();
+  }, [automation?.draft, automation?.signal, formNode]);
+
   return (
     <Modal
       open
@@ -54,9 +90,19 @@ export default function EntryEditor({
     >
       {busy && kind === "leave" && <LeaveSending />}
       <form
+        ref={setFormNode}
         onSubmit={async (event) => {
           event.preventDefault();
           const f = new FormData(event.currentTarget);
+          if (automation) {
+            if (!automationReady || submitted.current || automation.signal.aborted) return;
+            submitted.current = true;
+            if (String(f.get("project")) !== automation.draft.projectId || String(f.get("description")) !== automation.draft.description || !Number.isFinite(Number(f.get("hours"))) || Math.abs(Number(f.get("hours")) * 60 - automation.draft.minutes) > 0.000001) {
+              automation.onReady(new Error("Calendar fields changed during automation. No timesheet entry was saved.")); return;
+            }
+            if (!canEditDate(automation.draft.date)) { automation.onReady(new Error("This calendar date is restricted. No entry was saved.")); return; }
+            setBusy(true); automation.onReady(); return;
+          }
           const user = String(
             f.get("user") || selectedUser || profile?.user_id,
           );
@@ -169,7 +215,9 @@ export default function EntryEditor({
               <select
                 name="project"
                 required
-                defaultValue={editing.entry?.project_id || ""}
+                defaultValue={automation ? undefined : editing.entry?.project_id || ""}
+                value={automation ? selectedProject : undefined}
+                onChange={automation ? e => setSelectedProject(e.target.value) : undefined}
               >
                 <option value="" disabled>
                   Select a project
@@ -199,7 +247,9 @@ export default function EntryEditor({
                 name="description"
                 required
                 maxLength={2000}
-                defaultValue={editing.entry?.description}
+                defaultValue={automation ? undefined : editing.entry?.description}
+                value={automation ? typedDescription : undefined}
+                onChange={automation ? e => setTypedDescription(e.target.value) : undefined}
               />
             </label>
             <div className="form-grid">
@@ -207,7 +257,7 @@ export default function EntryEditor({
                 Task status
                 <select
                   name="status"
-                  defaultValue={editing.entry?.task_status || "In Progress"}
+                  defaultValue={automation ? "Completed" : editing.entry?.task_status || "In Progress"}
                 >
                   <option>Pending</option>
                   <option>In Progress</option>
@@ -215,7 +265,10 @@ export default function EntryEditor({
                 </select>
               </label>
               <HoursInput
-                initial={editing.entry ? editing.entry.minutes / 60 : 1}
+                key={automation ? String(hoursFilled) : "manual"}
+                initial={automation && hoursFilled ? automation.draft.minutes / 60 : editing.entry ? editing.entry.minutes / 60 : 1}
+                precise={!!automation}
+                readOnly={!!automation}
               />
             </div>
           </>
@@ -270,7 +323,7 @@ export default function EntryEditor({
           <button type="button" className="button secondary" onClick={onClose}>
             Cancel
           </button>
-          <button className="button" disabled={busy}>
+          <button type="submit" className="button" disabled={busy || (!!automation && !automationReady)}>
             {busy
               ? "Saving…"
               : kind === "leave"

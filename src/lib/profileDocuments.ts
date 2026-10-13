@@ -1,3 +1,4 @@
+import type { ResumeStyle } from "./resumeStyles";
 import { personalExportRows } from "./profileExportDetails";
 import type { Employee } from "./types";
 import type { ExtendedProfile } from "./profiles";
@@ -71,6 +72,8 @@ export async function downloadProfileDocument(
   preview = false,
   onBlob?: (blob: Blob) => void,
   includePrivate = false,
+  resumeStyle?: ResumeStyle,
+  onPreview?: (image:string)=>void,
 ) {
   await document.fonts.ready;
   const photo = await portrait(e, preview);
@@ -200,8 +203,13 @@ export async function downloadProfileDocument(
     return;
   }
   if (kind === "resume") {
-    const { resumePdf } = await import("./resumePdf");
-    emit(await resumePdf(e, p, photo, preview, includePrivate), filename);
+    if(resumeStyle) {
+      const {styledResumePdf}=await import("./resumeStyles");
+      emit(await styledResumePdf(e,p,photo,preview,resumeStyle,includePrivate,onPreview),filename.replace(".pdf",`-${resumeStyle}.pdf`));
+    } else {
+      const { resumePdf } = await import("./resumePdf");
+      emit(await resumePdf(e, p, photo, preview, includePrivate), filename);
+    }
     photo?.close();
     return;
   }

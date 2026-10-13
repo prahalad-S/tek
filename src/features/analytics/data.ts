@@ -5,6 +5,7 @@ import type { Employee } from "../../lib/types";
 export type AnalyticsEmployee = Employee & {
   joined: string;
   left: string;
+  left_recorded?: string;
   employment: string;
   qualifications: string[];
   assignments: { name: string; status: string }[];
@@ -61,6 +62,7 @@ export async function analyticsPeople(
         departments: { name: dept },
         joined: `${joinYear}-${month}-01`,
         left: isEx ? `${exitYear}-${month}-15` : "",
+        left_recorded: isEx ? `${exitYear}-${month}-15` : "",
         employment: isEx ? "Left" : "Active",
         qualifications: [["B.Tech", "MBA", "M.Des", "B.Sc", "MCA"][i % 5]],
         assignments:
@@ -104,6 +106,7 @@ export async function analyticsPeople(
       ...e,
       joined: joinedDate,
       left: leftDate,
+      left_recorded: realLeftDate,
       employment: isEx ? "Left" : "Active",
       qualifications: education
         .filter((q) => q.employee_id === e.id)

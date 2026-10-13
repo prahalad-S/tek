@@ -1,3 +1,4 @@
+import { automationClick, automationElement, automationWait, type CalendarAutomationDraft } from "../lib/jarvisUiAutomation";
 import TimeEntryDetails from "./calendar/TimeEntryDetails";
 import { useCalendarResize } from "./calendar/useCalendarResize";
 import { previewCalendarCommand } from "./calendar/previewCalendar";
@@ -51,11 +52,11 @@ import { useCalendarData } from "./calendar/useCalendarData";
 import EntryEditor, { type EditingEntry } from "./calendar/EntryEditor";
 import { RestrictedDate, CalendarAccessPanel } from "./calendar/CalendarAccess";
 import SharedCalendar from "./calendar/SharedCalendar";
-export default function Calendar() {
+export default function Calendar({ automation }: { automation?: { draft: CalendarAutomationDraft; signal: AbortSignal; onReady: (error?: Error) => void; onCancel: () => void; saved?: boolean } } = {}) {
   const { preview, member, profile } = useAuth();
   const [params, setParams] = useSearchParams();
   const [exportOpen, setExportOpen] = useState(false);
-  const [displayMode, setDisplayMode] = useState<"detailed" | "bands" | "large">("detailed");
+  const [displayMode, setDisplayMode] = useState<"detailed" | "bands" | "large">("bands");
   const compact = displayMode !== "detailed";
   useEffect(() => {
     if (params.get("panel")) setSharedOpen(true);
@@ -63,6 +64,12 @@ export default function Calendar() {
   const own = profile?.user_id || "preview";
   const [view, setView] = useState<CalendarView>("month");
   const [anchor, setAnchor] = useState(dateKey(new Date()));
+  useEffect(() => {
+    if (automation) { setView("month"); setAnchor(automation.draft.date); return; }
+    const next = params.get("view"), date = params.get("date");
+    if (next === "year" || next === "month" || next === "week" || next === "day") setView(next);
+    if (date && /^\d{4}-\d{2}-\d{2}$/.test(date) && !isNaN(new Date(date + "T12:00:00").getTime())) setAnchor(date);
+  }, [params, automation?.draft.date]);
   const [user, setUser] = useState(own);
   const [sampleData, setSampleData] = useState(
     () => localStorage.getItem("tekzenit-calendar-samples") !== "off",
@@ -93,6 +100,28 @@ export default function Calendar() {
   const [dragDate, setDragDate] = useState("");
   const range = calendarRange(anchor, view);
   const data = useCalendarData(range.from, range.to, preview, own);
+  useEffect(() => {
+    const id = params.get("jarvisEntry");
+    if (!id) return;
+    const entry = data.entries.data?.find(item => item.id === id);
+    if (entry) setDetails({ entry });
+  }, [params, data.entries.data]);
+  useEffect(() => {
+    if (!automation || automation.saved) return;
+    if (data.project.isError || data.entries.isError) { automation.onReady(new Error("Calendar data could not be loaded. No entry was saved.")); return; }
+    if (!data.project.isSuccess || !data.entries.isSuccess) return;
+    const local = new AbortController(), signal = AbortSignal.any([automation.signal,local.signal]);
+    void (async () => {
+      const day = await automationElement(`[aria-label="View entries ${automation.draft.date}"]`,signal);
+      await automationClick(day,signal);
+      await automationWait(200,signal);
+      const add = await automationElement('[data-jarvis-add-entry]',signal);
+      if (!add) throw new Error("The calendar Add work or leave action is unavailable.");
+      await automationClick(add,signal);
+    })().catch(error => { if (!signal.aborted) automation.onReady(error instanceof Error ? error : new Error("Could not open today's calendar entry")); });
+    return () => local.abort();
+  }, [automation?.saved,automation?.draft,automation?.signal,data.project.isSuccess,data.entries.isSuccess,data.project.isError,data.entries.isError]);
+  useEffect(() => { if (automation?.saved) { setEditing(null); setDayOpen(null); setDetails(null); } },[automation?.saved]);
   const qc = useQueryClient();
   const toast = useToast();
   const resize = useCalendarResize(
@@ -219,6 +248,7 @@ export default function Calendar() {
       return;
     }
     if (!editableDate(date)) {
+      automation?.onReady(new Error("This calendar date is restricted. No timesheet entry was saved."));
       setRestricted(date);
       return;
     }
@@ -525,7 +555,7 @@ export default function Calendar() {
             {person}
           </span>
         ))}
-        {dayRows.slice(0, view === "week" ? 5 : 2).map(entryNode)}
+        {dayRows.slice(0, view === "day" ? 1000 : view === "week" ? 5 : 2).map(entryNode)}
         {dayLeave.slice(0, 2).map((l) => (
           <button
             key={l.id}
@@ -547,7 +577,7 @@ export default function Calendar() {
             </small>
           </button>
         ))}
-        {dayRows.length > (view === "week" ? 5 : 2) || dayLeave.length > 2 ? (
+        {dayRows.length > (view === "day" ? 1000 : view === "week" ? 5 : 2) || dayLeave.length > 2 ? (
           <button className="more-entries" onClick={() => setDayOpen(date)}>
             View all {dayRows.length + dayLeave.length} entries
           </button>
@@ -697,7 +727,7 @@ export default function Calendar() {
           </button>
         </div>
         <div className="view-toggle" aria-label="Calendar view">
-          {(["week", "month", "year"] as const).map((v) => (
+          {(["day", "week", "month", "year"] as const).map((v) => (
             <button
               key={v}
               aria-pressed={view === v}
@@ -933,7 +963,7 @@ export default function Calendar() {
         <div className="calendar-scroll">
           <div className={`work-calendar ${view}`}>
             <div className="calendar-weekdays">
-              {[
+              {(view === "day" ? [new Date(anchor + "T12:00:00").toLocaleDateString(undefined, { weekday: "long" })] : [
                 "Monday",
                 "Tuesday",
                 "Wednesday",
@@ -941,7 +971,7 @@ export default function Calendar() {
                 "Friday",
                 "Saturday",
                 "Sunday",
-              ].map((d) => (
+              ]).map((d) => (
                 <span key={d}>{d}</span>
               ))}
             </div>
@@ -1000,7 +1030,8 @@ export default function Calendar() {
       {editing && (
         <EntryEditor
           editing={editing}
-          onClose={() => setEditing(null)}
+          automation={automation}
+          onClose={() => { setEditing(null); automation?.onCancel(); }}
           onSaved={refresh}
           onRestricted={setRestricted}
           canEditDate={editableDate}

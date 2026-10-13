@@ -17,3 +17,11 @@ verify_jwt = false
 verify_jwt = false
 # The function validates the caller with auth.getUser; Jira credentials stay server-side.
 
+
+[functions.jarvis-editor]
+verify_jwt = false
+# Explicitly validates the caller via auth.getUser and enforces AI quotas.
+
+[functions.github-editor]
+verify_jwt = false
+# Validates the caller with auth.getUser and restricts GitHub access to one owner and repository.

@@ -1,0 +1,27 @@
+services:
+  jarvis-worker:
+    build:
+      context: ../..
+      dockerfile: tools/jarvis/Dockerfile
+    init: true
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4318:4318"
+    environment:
+      JARVIS_MODE: cloud
+      JARVIS_PROJECT_ROOT: /workspace
+      JARVIS_OWNER_USER_ID: ${JARVIS_OWNER_USER_ID:?Set the owner user UUID}
+      SUPABASE_URL: ${SUPABASE_URL:?Set the Supabase URL}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:?Set the public Supabase key}
+      JARVIS_WORKER_SECRET: ${JARVIS_WORKER_SECRET:?Set a private worker secret}
+    volumes:
+      - ${JARVIS_REPOSITORY_DIRECTORY:?Set a dedicated repository directory}:/workspace
+    read_only: true
+    tmpfs:
+      - /tmp:size=256m
+      - /home/node:uid=1000,gid=1000,size=64m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    cpus: 2
+    mem_limit: 2g
+    pids_limit: 256

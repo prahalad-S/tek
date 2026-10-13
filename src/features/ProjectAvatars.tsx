@@ -19,19 +19,24 @@ export function useProjectAvatars(preview: boolean) {
       if (preview)
         return {
           people: previewEmployees,
-          members: [] as { project_id: string; user_id: string }[],
+          members: [] as { project_id: string; user_id: string | null; employee_id?: string }[],
         };
       const people = await directoryPeople();
-      const members: { project_id: string; user_id: string }[] = [];
+      let directoryReady = true;
+      const members: { project_id: string; user_id: string | null; employee_id?: string }[] = [];
       for (let offset = 0; ; offset += 500) {
-        const r = await client()
-          .from("project_memberships")
-          .select("project_id,user_id")
+        let r = await client()
+          .from(directoryReady ? "project_team_directory" : "project_memberships")
+          .select(directoryReady ? "project_id,user_id,employee_id" : "project_id,user_id")
           .order("project_id")
-          .order("user_id")
-          .range(offset, offset + 499);
+          .order(directoryReady ? "employee_id" : "user_id")
+          .range(offset, offset + 499).returns<{ project_id: string; user_id: string | null; employee_id?: string }[]>();
+        if (directoryReady && r.error && ["PGRST205", "42P01"].includes(r.error.code)) {
+          directoryReady = false;
+          r = await client().from("project_memberships").select("project_id,user_id").order("project_id").order("user_id").range(offset, offset + 499).returns<{ project_id: string; user_id: string | null; employee_id?: string }[]>();
+        }
         if (r.error) throw r.error;
-        members.push(...r.data);
+        members.push(...(r.data as unknown as { project_id: string; user_id: string | null; employee_id?: string }[]));
         if (r.data.length < 500) break;
       }
       return { people, members };
@@ -47,7 +52,7 @@ export function ProjectAvatars({
   projectId: string;
   data?: {
     people: Employee[];
-    members: { project_id: string; user_id: string }[];
+    members: { project_id: string; user_id: string | null; employee_id?: string }[];
   };
   pending: boolean;
   error: boolean;
@@ -66,7 +71,7 @@ export function ProjectAvatars({
       .map((m) => m.user_id),
   );
   const team =
-    data?.people.filter((p) => p.user_id && ids.has(p.user_id)) || [];
+    data?.people.filter((p) => (p.user_id && ids.has(p.user_id)) || data.members.some(m => m.project_id === projectId && m.employee_id === p.id)) || [];
   const spotlight = !team.length;
   const people = spotlight
     ? [...(data?.people || [])]

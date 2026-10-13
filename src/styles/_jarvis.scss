@@ -1,0 +1,109 @@
+.jarvis-layer { display: contents; }
+.jarvis-accessible { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.jarvis-conversation {
+  z-index: 2000; mix-blend-mode: lighten; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); filter: blur(1.5px);
+  width: min(1000px, calc(100vw - 32px)); height: min(850px, calc(100dvh - 40px));
+  min-width: min(220px, calc(100vw - 16px)); min-height: min(200px, calc(100dvh - 16px));
+  max-width: calc(100vw - 16px); max-height: calc(100dvh - 16px);
+  overflow: hidden; resize: both; background: transparent; border: 0; box-shadow: none;
+  outline: none; color: var(--text); pointer-events: auto; cursor: grab; touch-action: none;
+}
+.jarvis-conversation:active { cursor: grabbing; }
+.jarvis-conversation:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 16px; }
+.jarvis-orb { display: block; width: 100%; height: 100%; margin: 0; object-fit: contain; mix-blend-mode: screen; pointer-events: none; user-select: none; }
+[data-theme="light"] .jarvis-orb { filter: invert(1) hue-rotate(180deg); mix-blend-mode: multiply; }
+[data-theme="light"] .jarvis-conversation { mix-blend-mode: darken; filter: invert(1) hue-rotate(190deg) blur(.5px); background:radial-gradient(circle, #00000000 0%, #000000 100%);
+    mask-position: center;}
+[data-theme="dark"] .jarvis-conversation { mix-blend-mode: lighten; }
+.jarvis-close { position: absolute; right: 8px; top: 8px; z-index: 2; border-radius: 50%; cursor: pointer; }
+.jarvis-conversation-body {
+  z-index: 2001; position: fixed; bottom: max(20px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
+  width: 35vw; min-width: min(340px, calc(100vw - 32px)); max-width: calc(100vw - 32px);
+  max-height: min(65dvh, 600px); overflow-y: auto; box-sizing: border-box;
+  padding: 18px 20px; border-radius: 22px; pointer-events: auto; cursor: grab;
+  color: var(--text); background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--border); box-shadow: 0 12px 48px #00000026;
+}
+.jarvis-reply { margin: 0 0 12px; font-size: 14px; line-height: 1.6; max-height: 140px; overflow-y: auto; white-space: pre-wrap; }
+.jarvis-command { display: flex; align-items: center; gap: 3px; padding: 6px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 16px; }
+.jarvis-command input { min-width: 0; flex: 1; border: 0; box-shadow: none; background: transparent; padding: 10px; color: inherit; }
+.jarvis-command .icon-button { flex-shrink: 0; cursor: pointer; }
+.jarvis-command [aria-pressed="true"] { color: var(--accent); background: var(--accent-soft); }
+.jarvis-layer small { display: block; margin-top: 8px; font-size: 11px; line-height: 1.6; color: var(--text-secondary); }
+.jarvis-draft { display: grid; gap: 10px; margin-top: 16px; }
+.jarvis-draft label { display: grid; gap: 5px; font-size: 12px; }
+.jarvis-draft input, .jarvis-draft textarea, .jarvis-draft select { width: 100%; }
+.jarvis-suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.jarvis-suggestions .button { white-space: normal; text-align: left; }
+.app-shell.jarvis-open { filter: blur(5px); }
+.work-calendar.day .calendar-weekdays, .work-calendar.day .work-calendar-grid { grid-template-columns: minmax(0, 1fr); }
+.work-calendar.day .work-calendar-day { min-height: 420px; }
+@media (max-width: 700px) { .jarvis-conversation-body { width: calc(100vw - 32px); padding: 14px; bottom: 16px; } }
+
+.github-import-modal { max-height: 75dvh; overflow-y: auto; overscroll-behavior: contain; }
+
+[data-theme="light"] .jarvis-orb--light { filter: none; mix-blend-mode: darken; }
+
+.project-delete-actions { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+
+// Borderless workflow chooser, with the selected mode shown in lavender.
+.jarvis-mode-backdrop { position: fixed; inset: 0; z-index: 2100; background: radial-gradient(ellipse at 50% 48%, #181027ed 0%, #08070df2 55%, #000f 100%); backdrop-filter: blur(8px); }
+.jarvis-mode-popup { position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 2101; width: min(820px,calc(100vw - 40px)); max-height: 88dvh; overflow-y: auto; padding: 30px 10px; border: 0; outline: none; border-radius: 0; background: transparent; color: #eeeaf4; box-shadow: none; text-align: center;  min-height: 500px; display: flex; justify-content: space-around; flex-direction: column;}
+.jarvis-mode-popup h2 { margin: 0 0 54px; font-size: clamp(28px,4vw,48px); line-height: 1.2; font-weight: 400; letter-spacing: -1px; }
+.jarvis-mode-options { display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+.jarvis-mode-button { display: inline-flex; align-items: center; justify-content: center; width: 270px; min-height: 84px; padding: 18px 24px; border: 1px solid #ffffff20; border-radius: 6px; background: linear-gradient(#111116,#0b0b0e); color: #eae6ef; font: inherit; font-size: 18px; font-weight: 500; cursor: pointer; transition: background .25s ease,color .25s ease,box-shadow .25s ease,border-color .25s ease; }
+.jarvis-mode-button.is-selected { background: #A48AEF; color: #171026; border-color: #b9a3f5; box-shadow: 0 0 36px #a48aef50; }
+.jarvis-mode-button:hover { border-color: #a48aef; }
+.jarvis-mode-button:focus-visible { outline: 2px solid #d2c1ff; outline-offset: 5px; }
+.jarvis-mode-warning { margin: 66px 0 0; min-height: 130px; display: block; align-content: center; padding: 28px 36px; border: 1px solid #ffffff16; border-radius: 26px; background: linear-gradient(#16161b,#101014); box-shadow: inset 0 1px 1px #ffffff08; font-size: clamp(16px,1.8vw,21px); line-height: 1.55; color: #ddd9e2; }
+.jarvis-warning-caret { opacity: .6; }
+@media (max-width: 600px) { .jarvis-mode-popup h2 { margin-bottom: 32px; } .jarvis-mode-options { gap: 14px; } .jarvis-mode-button { width: 50%; min-height: 68px; padding: 14px 10px; font-size: 15px; } .jarvis-mode-warning { margin-top: 36px; padding: 22px; border-radius: 20px; } }
+@media (prefers-reduced-motion: reduce) { .jarvis-mode-button { transition: none; } }
+
+.profile-document-pair { width: min(1200px, 94vw); max-width: 94vw; }
+.profile-document-pair-grid { display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap:20px; }
+.profile-document-pair-grid > section { min-width:0; border:1px solid var(--border); border-radius:12px; padding:12px; }
+.profile-document-pair-grid iframe { border:0; width:100%; height:60vh; }
+.profile-document-pair-grid img { width:100%; max-height:60vh; object-fit:contain; }
+@media(max-width:650px) { .profile-document-pair-grid { grid-template-columns:1fr; } }
+
+.jarvis-intro-overlay { position:fixed; inset:0; z-index:2100; pointer-events:none; background:transparent; opacity:1; transition:opacity .65s ease; }
+.jarvis-intro-overlay video { display:block; width:100%; height:100%; object-fit:cover; }
+[data-theme="dark"] .jarvis-intro-overlay { mix-blend-mode:screen; }
+[data-theme="dark"] .jarvis-intro-overlay video { filter:brightness(.55) contrast(1.2) saturate(.85); opacity:.85; }
+[data-theme="light"] .jarvis-intro-overlay { mix-blend-mode:multiply; }
+[data-theme="light"] .jarvis-intro-overlay video { filter:invert(1) brightness(.8) contrast(1.15) saturate(.85); }
+.jarvis-intro-overlay.is-fading { opacity:0; }
+.jarvis-intro-reveal .jarvis-conversation { animation:jarvis-intro-enter .75s ease both; }
+.jarvis-intro-reveal .jarvis-conversation-body { animation:jarvis-intro-copy-enter .75s ease both; }
+@keyframes jarvis-intro-enter { from { opacity:0; scale:.82; } to { opacity:1; scale:1; } }
+@keyframes jarvis-intro-copy-enter { from { opacity:0; } to { opacity:1; } }
+@media(prefers-reduced-motion:reduce) { .jarvis-intro-reveal .jarvis-conversation,.jarvis-intro-reveal .jarvis-conversation-body { animation:none; }.jarvis-intro-overlay { transition:none; } }
+
+/* The canvas contains dashboard colors, so it needs no video inversion. */
+[data-theme="light"] .jarvis-pixel-intro,
+[data-theme="dark"] .jarvis-pixel-intro { mix-blend-mode:normal; filter:none; }
+.jarvis-pixel-intro canvas { display:block; width:100%; height:100%; }
+
+.jarvis-auto-video { position:fixed; inset:0; width:100vw; height:100dvh; object-fit:cover; z-index:2100; pointer-events:none; opacity:.25; }
+.jarvis-approval-glitch { animation:jarvis-auto-glitch 2.2s steps(1,end) infinite; }
+@keyframes jarvis-auto-glitch {
+  0%,60%,100% { transform:translate(0) skew(0); text-shadow:none; filter:none; }
+  62% { transform:translate(-3px,1px) skew(-3deg); text-shadow:3px 0 #ef6dba,-3px 0 #67d8e5; }
+  65% { transform:translate(3px,-2px) skew(3deg); text-shadow:-3px 1px #ef6dba,3px -1px #67d8e5; filter:brightness(1.15); }
+  68% { transform:translate(-2px,0); text-shadow:2px 0 #67d8e5,-2px 0 #ef6dba; }
+  71% { transform:translate(0); text-shadow:none; filter:none; }
+  80% { transform:translate(2px,1px) skew(-2deg); text-shadow:-3px 0 #ef6dba,3px 0 #67d8e5; }
+  83% { transform:translate(-3px,-1px); text-shadow:3px 0 #67d8e5; }
+  86% { transform:translate(0); text-shadow:none; }
+}
+@media(prefers-reduced-motion:reduce) { .jarvis-approval-glitch { animation:none; } }
+
+.jarvis-mode-button.jarvis-auto-mode,
+.jarvis-mode-button.jarvis-auto-mode.is-selected { background:rgba(220,38,38,.5); color:#fff; border-color:rgba(248,113,113,.65); box-shadow:0 0 30px rgba(220,38,38,.2); }
+
+.auth-story-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; pointer-events:none; z-index:0; }
+.auth-story-video-shade { position:absolute; inset:0; z-index:1; pointer-events:none; background:linear-gradient(135deg,rgba(238,235,246,.88),rgba(238,235,246,.65)); }
+.auth-story--video > .brand,.auth-story--video > .auth-story-content,.auth-story--video > .auth-footer { position:relative; z-index:2; }
+[data-theme="dark"] .auth-story-video-shade { background:linear-gradient(135deg,rgba(25,21,36,.85),rgba(25,21,36,.58)); }

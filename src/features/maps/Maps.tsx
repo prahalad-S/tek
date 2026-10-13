@@ -393,6 +393,7 @@ export default function Maps() {
             <button
               className="location-row"
               onClick={() => setSelected("")}
+              aria-label="All locations"
               aria-pressed={!selected}
             >
               <MapPin size={18} />
@@ -403,6 +404,7 @@ export default function Maps() {
               <button
                 key={name}
                 className="location-row"
+                aria-label={name}
                 aria-pressed={selected === name}
                 onClick={() => setSelected(name)}
               >

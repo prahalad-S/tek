@@ -1,3 +1,5 @@
+import ResumeStyleChooser from "./ResumeStyleChooser";
+import type { ResumeStyle } from "../../lib/resumeStyles";
 import { useProfileManagement } from "../../lib/useProfileManagement";
 import {
   BriefcaseBusiness,
@@ -41,6 +43,7 @@ export default function ProfileDetails({ employee }: { employee: Employee }) {
   const { preview, profile } = useAuth();
   const management = useProfileManagement();
   const [downloading, setDownloading] = useState(false);
+  const [resumeStyleOpen,setResumeStyleOpen]=useState(false);
   const toast = useToast();
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
@@ -72,7 +75,7 @@ export default function ProfileDetails({ employee }: { employee: Employee }) {
         typeof value === "string" ? value.trim().length > 0 : !!value,
       ).length
     : 0;
-  async function download(format: "pdf" | "docx") {
+  async function download(format: "pdf" | "docx",style?:ResumeStyle) {
     if (!q.data) return;
     setDownloading(true);
     try {
@@ -86,7 +89,9 @@ export default function ProfileDetails({ employee }: { employee: Employee }) {
         preview,
         undefined,
         canPrivate,
+        style,
       );
+      setResumeStyleOpen(false);
     } catch (e) {
       toast(errorMessage(e), "error");
     } finally {
@@ -95,6 +100,7 @@ export default function ProfileDetails({ employee }: { employee: Employee }) {
   }
   return (
     <div className="profile-detail-page">
+      {resumeStyleOpen && q.data && <ResumeStyleChooser employee={employee} data={q.data} includePrivate={canPrivate} busy={downloading} onClose={()=>setResumeStyleOpen(false)} onDownload={style=>download("pdf",style)}/>}
       <div className="profile-view-actions" aria-label="Profile actions">
         {(management.canManage(employee) ||
           employee.user_id === profile?.user_id) && (
@@ -113,10 +119,10 @@ export default function ProfileDetails({ employee }: { employee: Employee }) {
         )}
         <button
           className="icon-button"
-          aria-label="Download profile PDF"
-          title="Download profile PDF"
+          aria-label="Download resume PDF"
+          title="Download resume PDF - choose a style"
           disabled={!q.data || downloading}
-          onClick={() => void download("pdf")}
+          onClick={() => setResumeStyleOpen(true)}
         >
           <FileDown size={18} />
         </button>

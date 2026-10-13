@@ -1,7 +1,8 @@
-import { defineConfig } from "vite";
+import { jarvisSite } from "./tools/jarvisSite.ts";
+import { loadEnv, defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-export default defineConfig({
-  plugins: [react()],
+export default defineConfig(({ mode }) => ({
+  plugins: [react(), jarvisSite(loadEnv(mode, process.cwd(), ""))],
   server: {
     port: 5173,
     fs: {
@@ -32,4 +33,5 @@ export default defineConfig({
       },
     },
   },
-});
+}));
+
