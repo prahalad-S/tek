@@ -32,7 +32,20 @@ export function previewCalendarCommand(
     return;
   }
   const next = structuredClone(data);
-  if (name === "save_calendar_entry") {
+  if (name === "resize_calendar_entry") {
+    const entry = next.entries.find(e => e.id === p.p_id);
+    if (!entry || entry.version !== p.p_version) throw Error("Entry changed. Refresh and retry.");
+    const from = entry.calendar_span_start || entry.work_date;
+    if(p.p_date < from || rangeDays(from,p.p_date).length > 32 || p.p_minutes < 60 || p.p_minutes > 480 || p.p_minutes % 60) throw Error("Choose 1 to 8 hours per day.");
+    const span = entry.calendar_span_id || crypto.randomUUID();
+    const old = next.entries.filter(e => e.id === entry.id || e.calendar_span_id === span);
+    if(old.some(e => !["draft","rejected"].includes(e.timesheets.status))) throw Error("Timesheet is locked for review.");
+    next.entries = next.entries.filter(e => !old.includes(e));
+    for(const date of rangeDays(from,p.p_date)) {
+      const previous = old.find(e => e.work_date === date);
+      next.entries.push({...entry,id:previous?.id || crypto.randomUUID(),work_date:date,minutes:date === p.p_date ? p.p_minutes : 480,version:(previous?.version || 0)+1,calendar_span_id:span,calendar_span_start:from});
+    }
+  } else if (name === "save_calendar_entry") {
     const old = next.entries.find((e) => e.id === p.p_id);
     const entry = {
       ...old,
@@ -121,9 +134,9 @@ export function previewCalendarCommand(
             r.work_date === e.work_date &&
             r.timesheets.user_id === e.timesheets.user_id,
         )
-        .reduce((n, r) => n + r.minutes, 0) > 1440
+        .reduce((n, r) => n + r.minutes, 0) > 480
     )
-      throw Error("A day cannot exceed 24 hours.");
+      throw Error("Work cannot exceed 8 hours per day.");
   }
   history.push(structuredClone(data));
   if (history.length > 50) history.shift();

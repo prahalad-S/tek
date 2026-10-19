@@ -39,6 +39,8 @@ export function shiftAnchor(anchor: string, view: CalendarView, delta: number) {
 export type CalendarEntry = {
   id: string;
   timesheet_id: string;
+  calendar_span_id?: string | null;
+  calendar_span_start?: string | null;
   work_date: string;
   project_id: string;
   description: string;

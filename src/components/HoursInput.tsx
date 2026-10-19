@@ -12,9 +12,7 @@ export default function HoursInput({ initial = 1, precise = false, readOnly = fa
           value={
             Number.isInteger(num) && num >= 1 && num <= 8
               ? String(num)
-              : num >= 9
-                ? "9+"
-                : "custom"
+              : "custom"
           }
           onChange={(e) => {
             if (e.target.value !== "custom")
@@ -26,7 +24,7 @@ export default function HoursInput({ initial = 1, precise = false, readOnly = fa
               {i + 1} {i === 0 ? "hour" : "hours"}
             </option>
           ))}
-          <option value="9+">9+ hours</option>
+
           <option value="custom">Custom</option>
         </select>
       </label>
@@ -36,7 +34,7 @@ export default function HoursInput({ initial = 1, precise = false, readOnly = fa
           name="hours"
           type="number"
           min={precise ? 1 / 60 : 0.25}
-          max="24"
+          max="8"
           step={precise ? "any" : "0.25"}
           readOnly={readOnly}
           value={value}

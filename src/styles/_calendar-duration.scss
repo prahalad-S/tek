@@ -1,0 +1,37 @@
+.work-calendar-day .work-entry {
+  position: relative; min-width: 0; border: 0; border-radius: 20px;
+  background: var(--entry-color); color: #fff; 
+  // height: 36px;
+  padding: 0; box-sizing: border-box; overflow: hidden;
+  .entry-main { display: block; width: 100%; height: 100%; min-width: 0; padding: 4px 20px 4px 9px; color: #fff; overflow: hidden; text-align: left; }
+  .entry-main strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11px; line-height: 14px; color: #fff; }
+  .entry-main small { display: none; }
+  .entry-main span { display: none; white-space: nowrap; font-size: 9px; line-height: 12px; color: #fff; }
+  .entry-menu { display: none; }
+  .entry-resize { position: absolute; top: 0; right: 0; bottom: 0; width: 14px; height: 100%; border: 0; background: #ffffff26; cursor: ew-resize; touch-action: none; }
+  .entry-resize::after { content: ""; position: absolute; top: 11px; left: 5px; height: 14px; 
+    // border-left: 2px solid #ffffffbb; 
+  }
+}
+.resize-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 3000; }
+.resize-overlay .resize-ghost { position: fixed; border-radius: 20px; opacity: .85; pointer-events: none; min-width: 0; }
+.calendar-resize-hours { position: fixed; padding: 7px 10px; background: var(--text); color: var(--surface); border-radius: 8px; font-size: 12px; font-weight: 700; box-shadow: 0 4px 16px #0003; }
+.calendar-is-resizing { cursor: ew-resize; user-select: none; }
+.work-calendar-grid { position: relative; }
+.calendar-span-slot { height: 40px; pointer-events: none; }
+.calendar-span-layer { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
+.calendar-span-pill { position: absolute; height: 36px; pointer-events: auto; }
+.calendar-span-pill > .work-entry { width: 100% !important; }
+.calendar-span-pill .work-entry {
+  position: relative; min-width: 0; height: 36px; padding: 0; border: 0; border-radius: 20px; background: var(--entry-color); color: white; overflow: hidden;
+  .entry-main { display: block; width: 100%; height: 100%; padding: 4px 20px 4px 9px; text-align: left; color: white; background: transparent; border: 0; }
+  .entry-main small { display: none; }
+  .entry-main strong,.entry-main span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: white; font-size: 11px; line-height: 14px; }
+  .entry-menu { display: none; }
+  .entry-resize { position: absolute; right: 0; top: 0; bottom: 0; height: 100%; width: 14px; background: #ffffff26; }
+}
+.work-entry .entry-main { touch-action: none; }
+.theme-picker-results { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; padding: 4px; align-content: start; }
+.theme-switcher-menu.theme-switcher-picker { width: min(520px,calc(100vw - 24px)); }
+.theme-switcher-menu .theme-picker-results button { display: grid; grid-template-columns: 20px minmax(0,1fr) 16px; padding: 10px 8px; border: 1px solid var(--border); min-height: 58px; font-size: 12px; }
+.theme-picker-results button span { white-space: normal; overflow-wrap: anywhere; }

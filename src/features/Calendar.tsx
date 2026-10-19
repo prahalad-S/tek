@@ -1,3 +1,4 @@
+import CalendarSpans from "./calendar/CalendarSpans";
 import { automationClick, automationElement, automationWait, type CalendarAutomationDraft } from "../lib/jarvisUiAutomation";
 import TimeEntryDetails from "./calendar/TimeEntryDetails";
 import { useCalendarResize } from "./calendar/useCalendarResize";
@@ -127,7 +128,7 @@ export default function Calendar({ automation }: { automation?: { draft: Calenda
   const resize = useCalendarResize(
     editableDate,
     setRestricted,
-    (entry, date) => void perform(date, { entry, kind: "extend", date }),
+    (entry, date, minutes) => void resizeEntry(entry, date, minutes),
   );
   const manage = member?.role !== "employee";
   const today = data.access.data?.today || dateKey(new Date());
@@ -281,7 +282,34 @@ export default function Calendar({ automation }: { automation?: { draft: Calenda
     }
     setAction(next);
   }
-  async function perform(targetDate: string, requested?: Action) {
+  async function resizeEntry(entry: CalendarEntry, date: string, minutes: number) {
+    if (busy || isSample(entry)) return;
+    setBusy(true);
+    const key = ["calendar-entries", range.from, range.to, preview];
+    const before = qc.getQueryData<CalendarEntry[]>(key);
+    const span = entry.calendar_span_id || crypto.randomUUID();
+    const start = entry.calendar_span_start || entry.work_date;
+    if(before) {
+      const old = before.filter(e => e.id === entry.id || e.calendar_span_id === span);
+      const next = before.filter(e => !old.includes(e));
+      for(const day of rangeDays(start,date)) {
+        const previous = old.find(e => e.work_date === day);
+        next.push({...entry,id:previous?.id || crypto.randomUUID(),work_date:day,minutes:day === date ? minutes : 480,calendar_span_id:span,calendar_span_start:start});
+      }
+      qc.setQueryData(key,next);
+    }
+    try {
+      const args = { p_id: entry.id, p_version: entry.version, p_date: date, p_minutes: minutes };
+      if (preview) previewCalendarCommand("resize_calendar_entry", args, own);
+      else await rpc("resize_calendar_entry", args);
+      refresh();
+      toast("Work duration updated.");
+      await qc.invalidateQueries({queryKey:key});
+    } catch (error) {
+      if(before) qc.setQueryData(key,before);
+      toast(errorMessage(error).includes("resize_calendar_entry") ? "Calendar resizing needs the latest Supabase migration. No hours were changed." : errorMessage(error), "error");
+    } finally { setBusy(false); }
+  }  async function perform(targetDate: string, requested?: Action) {
     const action = requested || currentAction;
     if (!action) return;
     if (isSample(action.entry)) {
@@ -527,6 +555,12 @@ export default function Calendar({ automation }: { automation?: { draft: Calenda
                 : "—"}
           </button>
         </header>
+        {Array.from(new Set(rows.filter(e => {
+          if (!e.calendar_span_id) return false;
+          const dates = rangeDays(range.from, range.to);
+          const columns = view === "day" ? 1 : 7;
+          return Math.floor(dates.indexOf(e.work_date) / columns) === Math.floor(dates.indexOf(date) / columns);
+        }).map(e => e.calendar_span_id!))).sort().map(id => <div key={id} data-span-slot={id} className="calendar-span-slot" />)}
         {holidays(date).map((h) => (
           <button
             key={h.id}
@@ -555,7 +589,7 @@ export default function Calendar({ automation }: { automation?: { draft: Calenda
             {person}
           </span>
         ))}
-        {dayRows.slice(0, view === "day" ? 1000 : view === "week" ? 5 : 2).map(entryNode)}
+        {dayRows.filter(e => !e.calendar_span_id).slice(0, view === "day" ? 1000 : view === "week" ? 5 : 2).map(entryNode)}
         {dayLeave.slice(0, 2).map((l) => (
           <button
             key={l.id}
@@ -979,6 +1013,7 @@ export default function Calendar({ automation }: { automation?: { draft: Calenda
               className={`work-calendar-grid ${compact ? "calendar-bands" : ""}`}
             >
               {rangeDays(range.from, range.to).map(dayCell)}
+              <CalendarSpans entries={rows} renderEntry={entryNode} />
             </div>
           </div>
         </div>

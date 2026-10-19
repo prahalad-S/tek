@@ -6,7 +6,7 @@ export default function CalendarEntryCard({
   owner,
   onOpen,
   onMenu,
-  onDrag,
+
   onResize,
 }: {
   entry: CalendarEntry;
@@ -22,19 +22,14 @@ export default function CalendarEntryCard({
       style={
         {
           "--entry-color": getEntryColor(entry.project_id),
+          width: `${Math.min(100, Math.max(12.5, entry.minutes / 480 * 100))}%`,
         } as React.CSSProperties
       }
-      draggable
-      onDragStart={(e) => {
-        if ((e.target as HTMLElement).closest(".entry-resize")) {
-          e.preventDefault();
-          return;
-        }
-        onDrag(e);
-      }}
+      draggable={false}
+      onDragStart={(e) => e.preventDefault()}
       onContextMenu={onMenu}
     >
-      <button className="entry-main" onClick={onOpen}>
+      <button className="entry-main" onPointerDown={onResize} onClick={onOpen}>
         <small>
           {owner ? owner + " · " : ""}
           {entry.projects?.name}
@@ -60,7 +55,7 @@ export default function CalendarEntryCard({
           e.preventDefault();
           e.stopPropagation();
         }}
-        title="Drag to extend this entry across dates"
+        title="Drag to resize: each day is 8 hours; each step is 1 hour"
         aria-label={`Resize ${entry.description}`}
       />
     </div>
