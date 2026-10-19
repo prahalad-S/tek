@@ -1,0 +1,111 @@
+// Candy-colored playground theme. All overrides stay inside this theme.
+:root[data-theme="kids"] {
+  color-scheme: light;
+  font-family: "Nunito Variable", "Segoe UI", sans-serif;
+  --canvas: #f6f2ff; --surface: #ffffff; --surface-soft: #f0eaff;
+  --surface-hover: #e7ddff; --text: #30244f; --text-secondary: #58496f;
+  --text-muted: #6c5c80; --border: #d9cbed; --border-strong: #a98ace;
+  --accent: #7040c7; --accent-hover: #5a2eaa; --accent-soft: #eee3ff;
+  --accent-text: #6333ac; --green: #196749; --green-soft: #d5f5e2;
+  --red: #ae304d; --red-soft: #ffe0e8; --sidebar: #fffaf1;
+  --shadow: 0 5px 0 #d9cbed, 0 10px 24px #6944960b;
+  --shadow-lift: 0 7px 0 #c9b6e6, 0 14px 28px #69449614;
+  --radius: 24px; --banner: #ffe8a1; --banner-text: #594018;
+  --overlay: #30244f66;
+
+  body {
+    font-weight: 550;
+    background-color: var(--canvas);
+    background-image: radial-gradient(circle, #d7c4ed 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  h1, h2, h3, .brand, .stat-card > strong {
+    font-family: "Baloo 2 Variable", "Nunito Variable", sans-serif;
+    font-weight: 750; letter-spacing: -.025em; line-height: 1.2;
+  }
+  h1 { color: #6333ac; font-size: clamp(30px, 3vw, 42px); }
+  h2 { font-size: 23px; }
+  h3 { font-size: 19px; }
+  svg.lucide { stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .sidebar { border-right: 3px solid #e2cfee; background: var(--sidebar); }
+  .brand { color: #6333ac; }
+  .brand-link { padding-top: 10px; }
+  .nav-label { color: #78547d; font-weight: 850; letter-spacing: .14em; }
+  .sidebar nav { gap: 8px; }
+  .sidebar nav a, .settings-link {
+    border: 2px solid transparent; border-radius: 18px; font-weight: 750;
+    transition: background .18s ease, box-shadow .18s ease;
+  }
+  .sidebar nav a svg { stroke-width: 2.5; color: #7448bc; }
+  .sidebar nav a:nth-child(4n + 2) svg { color: #c04470; }
+  .sidebar nav a:nth-child(4n + 3) svg { color: #197c86; }
+  .sidebar nav a:nth-child(4n) svg { color: #986600; }
+  .sidebar nav a.active { background: #ffe58b; color: #513916; border-color: #efcb64; box-shadow: 0 3px 0 #e9bd51; }
+  .sidebar nav a.active svg { color: #513916; }
+  .sidebar nav a:hover { background: #f5e4ff; }
+  .topbar { background: #fffcf8; border-bottom: 3px solid #e7d5f3; }
+  .panel, .project-card, .person-card, .stat-card, .event-date-card {
+    border: 2px solid #ddccef; border-radius: 26px 26px 22px 22px;
+    background: var(--surface); box-shadow: var(--shadow);
+  }
+  .stat-card { border-radius: 28px 28px 28px 10px; }
+  .stat-card:nth-child(4n + 1) { background: #fff0af; border-color: #ecd27a; box-shadow: 0 5px 0 #ecd27a; }
+  .stat-card:nth-child(4n + 2) { background: #d8f5ed; border-color: #91d7c2; box-shadow: 0 5px 0 #91d7c2; }
+  .stat-card:nth-child(4n + 3) { background: #fce0eb; border-color: #e9abc7; box-shadow: 0 5px 0 #e9abc7; }
+  .stat-card:nth-child(4n + 4) { background: #e6dfff; border-color: #c2afe9; box-shadow: 0 5px 0 #c2afe9; }
+  .stat-card > strong { font-size: 38px; color: #42305e; }
+  .stat-top { font-size: 12px; font-weight: 800; }
+  .project-card:hover, .person-card:hover { box-shadow: var(--shadow-lift); }
+  .project-symbol { border-radius: 22px 22px 22px 7px; border: 2px solid #bda2e6; background: #eee0ff; color: #6637af; transform: rotate(-5deg); }
+  .project-color-1 .project-symbol { background: #ffe4b0; color: #85530d; border-color: #ebc47d; }
+  .project-color-2 .project-symbol { background: #d2f4ed; color: #1d7065; border-color: #8dd4c5; }
+  .project-color-3 .project-symbol { background: #ffe0ed; color: #a53865; border-color: #eaa9c6; }
+  .project-symbol svg { transform: rotate(5deg); }
+  .button {
+    border-radius: 18px; border: 2px solid #54259c; background: var(--accent);
+    color: #fff; font-weight: 850; box-shadow: 0 4px 0 #4b2386;
+    transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+  }
+  .button.secondary { color: #6333ac; background: #f1e7ff; border-color: #c9afe9; box-shadow: 0 4px 0 #c9afe9; }
+  .button.danger { background: #b73558; border-color: #932543; box-shadow: 0 4px 0 #932543; }
+  .button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 0 #4b2386; }
+  .button.secondary:hover:not(:disabled) { background: #e7d5ff; box-shadow: 0 6px 0 #c9afe9; }
+  .button:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 #4b2386; }
+  .button:disabled { box-shadow: none; }
+  .icon-button { background: #f1e5ff; color: #6637af; border: 2px solid #d8c1ef; border-radius: 14px; box-shadow: 0 3px 0 #d8c1ef; }
+  .icon-button:hover:not(:disabled) { background: #ffe89a; color: #68490d; border-color: #eccc76; }
+  .text-button, .text-link { font-weight: 800; }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea {
+    border: 2px solid #d5bee9; border-radius: 14px; background: #fffcff; color: var(--text);
+  }
+  input[type="checkbox"], input[type="radio"], input[type="range"] { accent-color: #7040c7; }
+  :is(button, a, input, select, textarea):focus-visible { outline: 3px solid #ac4b8e; outline-offset: 3px; }
+  .badge, .person-department, .event-category { border-radius: 10px; font-weight: 800; }
+  .avatar { border: 2px solid #fff; box-shadow: 0 0 0 2px #d9c2ed; font-weight: 800; }
+  .modal { background: #fffcff; border: 3px solid #cfb3ec; border-radius: 28px; box-shadow: 0 8px 0 #bfa1dd, 0 24px 80px #30244f33; }
+  .modal-heading h2 { color: #6333ac; }
+  .theme-switcher-menu { border: 2px solid #d5bee9; border-radius: 20px; box-shadow: 0 5px 0 #cbb1e5, 0 12px 30px #30244f15; }
+  .theme-switcher-menu button { border-radius: 13px; font-weight: 800; }
+  .theme-switcher-menu button[aria-checked="true"] { background: #ffe89a; color: #513916; }
+  .theme-options { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+  .theme-option { border-radius: 18px; }
+  .theme-option.selected { border-color: #7040c7; background: #f1e5ff; }
+  th { background: #f1e7ff; color: #6333ac; font-weight: 850; }
+  .event-date-sheet { border-radius: 18px; border: 2px solid #d9c2ed; box-shadow: 0 4px 0 #ddccef; }
+  .event-date-month { font-family: "Baloo 2 Variable", sans-serif; font-size: 17px; }
+  .planning-gantt-pill { border-radius: 20px; box-shadow: 0 3px 0 #49346433; }
+  .employee-experience-bar { border-radius: 12px 12px 0 0; }
+  .jarvis-conversation { mix-blend-mode: darken; filter: invert(1) hue-rotate(189deg); }
+  // Keep source code and editor previews in their own typography.
+  pre, code, .editor-code { font-family: ui-monospace, monospace; }
+}
+.swatch-kids {
+  background: #fff0af; border-radius: 15px;
+  i { background: #ead8ff; }
+  b { background: #d2f4ed; border-radius: 5px; }
+  b:nth-of-type(2) { background: #ffd2e6; }
+  b:nth-of-type(3) { background: #c8e6ff; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="kids"] .button, [data-theme="kids"] .sidebar nav a { transition: none; }
+}

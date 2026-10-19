@@ -1,3 +1,4 @@
+import ThemeSwitcher from "./ThemeSwitcher";
 import JarvisIntro from "../features/JarvisIntro";
 import { assignedJiraQuery } from "../lib/jiraIssueCache";
 import { useState, useEffect, lazy, Suspense } from "react";
@@ -26,8 +27,6 @@ import {
   Bell,
   Menu,
   X,
-  Sun,
-  Moon,
   LogOut,
   ArrowUpRight,
   ChevronDown,
@@ -41,7 +40,7 @@ import {
   MapPin,
   UserRound,
 } from "lucide-react";
-import { useAuth, useTheme } from "./providers";
+import { useAuth } from "./providers";
 import { notices, rpc } from "../lib/api";
 import {
   Brand,
@@ -68,7 +67,7 @@ export default function Shell() {
     signOut,
     refresh,
   } = useAuth();
-  const { theme, setTheme } = useTheme();
+
   const [mobile, setMobile] = useState(false);
   const [assistant, setAssistant] = useState(false);
   const [jarvisBlur, setJarvisBlur] = useState(true);
@@ -324,21 +323,7 @@ export default function Shell() {
                 <Icon size={19} />
               </Link>
             ))}
-            <button
-              className="icon-button"
-              aria-label="Toggle color theme"
-              onClick={() =>
-                setTheme(
-                  theme === "dark" ||
-                    (theme === "system" &&
-                      matchMedia("(prefers-color-scheme: dark)").matches)
-                    ? "light"
-                    : "dark",
-                )
-              }
-            >
-              {theme === "dark" ? <Sun size={19} /> : <Moon size={19} />}
-            </button>
+            <ThemeSwitcher />
             <button
               className="icon-button notification-button"
               aria-label="Open notifications"

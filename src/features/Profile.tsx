@@ -1,3 +1,4 @@
+import { themeOptions } from "../app/themes";
 import { useSearchParams } from "react-router-dom";
 import AdminProfileEditor from "./profiles/AdminProfileEditor";
 import MapPosition from "./profiles/MapPosition";
@@ -293,7 +294,7 @@ function OwnProfile() {
               </div>
             </div>
             <div className="theme-options">
-              {["light", "dark", "system"].map((t) => (
+              {[...themeOptions.map(option => option.value), "system"].map((t) => (
                 <button
                   key={t}
                   className={`theme-option ${theme === t ? "selected" : ""}`}
@@ -306,7 +307,7 @@ function OwnProfile() {
                     <b />
                   </span>
                   <span>
-                    {t[0].toUpperCase() + t.slice(1)}
+                    {themeOptions.find(option => option.value === t)?.label || "System"}
                     {theme === t && <Check size={16} />}
                   </span>
                 </button>

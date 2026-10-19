@@ -1,3 +1,4 @@
+import { darkThemes, themeFromSpeech } from "../app/themes";
 import cautionVideo from "../assets/jarvis/caution.mp4";
 import { guideClick, automationWait, scrollJarvis, stopJarvisScroll } from "../lib/jarvisGuides";
 import { assignedJiraQuery, type AssignedJiraIssues } from "../lib/jiraIssueCache";
@@ -32,9 +33,9 @@ const blank = (): Draft => ({ date: "", description: "", hours: null, project: "
 export default function JarvisOverlay({ onClose, openJira, onCommandReceived, introReveal=false }: { onClose: () => void; openJira: () => void; onCommandReceived: () => void; introReveal?:boolean }) {
   const { profile, member, preview, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
-  const [lightAnimation, setLightAnimation] = useState(document.documentElement.dataset.theme === "light");
+  const [lightAnimation, setLightAnimation] = useState(!darkThemes.has(document.documentElement.dataset.theme || "light"));
   useEffect(() => {
-    const update = () => setLightAnimation(document.documentElement.dataset.theme === "light");
+    const update = () => setLightAnimation(!darkThemes.has(document.documentElement.dataset.theme || "light"));
     const observer = new MutationObserver(update);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     update(); return () => observer.disconnect();
@@ -581,7 +582,7 @@ export default function JarvisOverlay({ onClose, openJira, onCommandReceived, in
         else if (!value.description && hours === null && !project && !jarvisDate(text)) value.description = raw.trim();
         locked.current = false; setBusy(false); askDraft(value); return;
       }
-      if (/\b(light|dark)\b/.test(text) && /\b(mode|theme)\b/.test(text)) { const mode = /\bdark\b/.test(text) ? "dark" : "light"; rememberJarvisAction("changing the theme", () => setTheme(theme)); setTheme(mode); answer(`Switched to ${mode} mode.`); return; }
+      const requestedTheme = themeFromSpeech(text); if (requestedTheme && /\b(mode|theme)\b/.test(text)) { rememberJarvisAction("changing the theme", () => setTheme(theme)); setTheme(requestedTheme.value); answer(`Switched to ${requestedTheme.label} mode.`); return; }
       if (/\b(?:add|new|create|remove)\b.*\bemployee\b/.test(text)) {
         if (member?.role !== "admin") { answer("Sorry, you have no access. Only administrators can manage employees."); return; }
         go(`access?${/\bremove\b/.test(text) ? "delete" : "new"}=1&jarvis=${Date.now()}`, "Opening employee management. You can review the details in the dialog."); return;
