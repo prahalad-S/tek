@@ -31,7 +31,160 @@
   .entry-resize { position: absolute; right: 0; top: 0; bottom: 0; height: 100%; width: 14px; background: #ffffff26; }
 }
 .work-entry .entry-main { touch-action: none; }
-.theme-picker-results { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; padding: 4px; align-content: start; }
-.theme-switcher-menu.theme-switcher-picker { width: min(520px,calc(100vw - 24px)); }
-.theme-switcher-menu .theme-picker-results button { display: grid; grid-template-columns: 20px minmax(0,1fr) 16px; padding: 10px 8px; border: 1px solid var(--border); min-height: 58px; font-size: 12px; }
+.theme-picker-results { display:grid; grid-template-columns:repeat(8,minmax(0,1fr)); gap:5px; padding:4px; align-content:start; overflow:visible; }
+.theme-switcher-menu.theme-switcher-picker { width:min(1440px,calc(100vw - 24px)); max-height:none; overflow:visible; }
+.theme-switcher-menu.theme-switcher-picker .theme-picker-results { overflow:visible; max-height:none; }
+.theme-switcher-menu .theme-picker-results button { display:grid; grid-template-columns:16px minmax(0,1fr) 14px; padding:6px; border:1px solid var(--border); min-height:42px; font-size:10px; line-height:1.15; }
 .theme-picker-results button span { white-space: normal; overflow-wrap: anywhere; }
+.theme-switcher-menu .theme-switcher-heading { display:flex; align-items:center; gap:8px; }
+.theme-switcher-menu .theme-switcher-heading small { margin-right:auto; }
+.theme-switcher-menu .theme-picker-close { width:28px; min-height:28px; padding:4px; display:grid; place-items:center; border:1px solid var(--border); border-radius:8px; background:var(--surface-soft); color:var(--text); }
+.theme-switcher-menu .theme-picker-close:hover { background:var(--accent-soft); }
+@media (max-width: 1000px) {
+  .theme-picker-results { grid-template-columns:repeat(6,minmax(0,1fr)); }
+}
+@media (max-width: 430px) {
+  .theme-picker-results { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+
+// Keep the live map in the same visual system as the active dashboard theme.
+:root[data-theme] {
+  --map-tile-filter:none;
+
+  .embedded-map-panel { border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); background:var(--surface); }
+  .map-toolbar-top { background:color-mix(in srgb,var(--surface) 88%,transparent); color:var(--text); border-color:var(--border); border-radius:calc(var(--radius) * .75); box-shadow:0 2px 10px color-mix(in srgb,var(--text) 14%,transparent); }
+  .timeline-play-btn { color:var(--text); background:var(--surface-soft); border-color:var(--border-strong); border-radius:calc(var(--radius) * .45); font-family:inherit; }
+  .timeline-play-btn:hover { background:var(--surface-hover); border-color:var(--accent); }
+  .timeline-slider { background:linear-gradient(to right,var(--accent) 0%,var(--accent) var(--progress,100%),var(--surface-soft) var(--progress,100%),var(--surface-soft) 100%); border-color:var(--border); }
+  .timeline-slider::-webkit-slider-thumb { background:var(--accent); border-color:var(--surface); }
+  .timeline-slider::-moz-range-thumb { background:var(--accent); border-color:var(--surface); }
+  .timeline-date-display { color:var(--accent-text); font-family:inherit; }
+  .map-caption { background:var(--surface); border-color:var(--border); border-radius:var(--radius); color:var(--text); }
+  .map-avatar,.map-avatar-sm { background:var(--accent); border-color:var(--surface); box-shadow:0 3px 12px color-mix(in srgb,var(--accent) 42%,transparent); font-family:inherit; }
+  .leaflet-container { background:var(--surface-soft); }
+  .leaflet-tile-pane { filter:var(--map-tile-filter); }
+  .leaflet-control-zoom { border-color:var(--border-strong); border-radius:calc(var(--radius) * .45); box-shadow:var(--shadow); }
+  .leaflet-control-zoom a { background:var(--surface) !important; color:var(--text) !important; border-bottom-color:var(--border) !important; }
+  .leaflet-control-attribution { background:color-mix(in srgb,var(--surface) 86%,transparent) !important; color:var(--text-muted) !important; }
+  .leaflet-control-attribution a { color:var(--accent-text) !important; }
+}
+
+:root[data-theme="monochrome-retro-os"] { --map-tile-filter:grayscale(1) contrast(1.65) brightness(1.08); }
+:root[data-theme="pastel-retro-desktop"] { --map-tile-filter:saturate(.68) sepia(.12) brightness(1.07); }
+:root[data-theme="handwritten"] { --map-tile-filter:sepia(.28) saturate(.7) contrast(.9); }
+:root[data-theme="graffiti"] { --map-tile-filter:contrast(1.28) saturate(1.45) hue-rotate(280deg) brightness(.76); }
+:root[data-theme="victorian"] { --map-tile-filter:sepia(.52) saturate(.62) contrast(.94); }
+:root[data-theme="surreal"] { --map-tile-filter:hue-rotate(35deg) saturate(.85) contrast(.95); }
+:root[data-theme="pop-art"] { --map-tile-filter:saturate(1.65) contrast(1.17); }
+:root[data-theme="collage-art"] { --map-tile-filter:sepia(.22) saturate(.66) contrast(.92); }
+:root[data-theme="vector-art"] { --map-tile-filter:saturate(.54) contrast(1.08) brightness(1.08); }
+:root[data-theme="dark"],
+:root[data-theme="oled"],
+:root[data-theme="retro-futurism"],
+:root[data-theme="vaporwave"],
+:root[data-theme="pixel-art"],
+:root[data-theme="rgb-split"],
+:root[data-theme="hud"],
+:root[data-theme="monitoring"],
+:root[data-theme="midnight-runner"] {
+  --map-tile-filter:brightness(.6) invert(1) contrast(3) hue-rotate(200deg) saturate(.3) brightness(.7);
+}
+
+// Pills are shared visual objects: calendar work, planning activities, labels and
+// small status chips.  They inherit the active theme instead of keeping the
+// planning palette when the rest of the dashboard changes.
+[data-theme] {
+  --pill-text: #fff;
+  --pill-border: color-mix(in srgb, var(--text) 18%, transparent);
+  --pill-shadow: 0 3px 8px color-mix(in srgb, var(--text) 14%, transparent);
+  --pill-filter: none;
+
+  .work-entry,
+  .calendar-span-pill .work-entry,
+  .planning-gantt-pill {
+    color: var(--pill-text) !important;
+    border-color: var(--pill-border) !important;
+    box-shadow: var(--pill-shadow);
+    filter: var(--pill-filter);
+  }
+
+  .work-entry :is(.entry-main, .entry-main strong, .entry-main span),
+  .calendar-span-pill .work-entry :is(.entry-main, .entry-main strong, .entry-main span),
+  .planning-gantt-pill,
+  .planning-gantt-pill .planning-gantt-label {
+    color: var(--pill-text) !important;
+  }
+
+  .planning-gantt-avatars > span { border-color: color-mix(in srgb, var(--pill-text) 80%, transparent); }
+  .badge, .event-category, .calendar-leave, .planning-progress { border-color: var(--pill-border); }
+}
+
+[data-theme="glassmorphism"],
+[data-theme="liquid-glass"],
+[data-theme="spatial"] {
+  --pill-border: #ffffffc7;
+  --pill-shadow: inset 0 1px 1px #ffffffcc, 0 9px 20px #40507822;
+  .work-entry, .calendar-span-pill .work-entry, .planning-gantt-pill {
+    backdrop-filter: blur(16px) saturate(145%);
+  }
+  .badge, .event-category, .calendar-leave { backdrop-filter: blur(12px); }
+}
+
+[data-theme="neumorphism"] {
+  --pill-border: transparent;
+  --pill-shadow: 4px 4px 8px #c1c9d0, -4px -4px 8px #ffffff;
+}
+
+[data-theme="claymorphism"],
+[data-theme="kids"] {
+  --pill-border: #ffffff80;
+  --pill-shadow: inset 2px 2px 4px #ffffff66, inset -3px -3px 6px #432a6c33, 0 5px 9px #5e438b2b;
+}
+
+[data-theme="brutalism"],
+[data-theme="bauhaus"] {
+  --pill-border: var(--text);
+  --pill-shadow: 3px 3px 0 var(--text);
+  .work-entry, .calendar-span-pill .work-entry, .planning-gantt-pill { border-width: 2px; border-radius: 0; }
+}
+
+[data-theme="neo-brutalism"],
+[data-theme="retro"] {
+  --pill-shadow: 3px 3px 0 var(--text);
+  .work-entry, .calendar-span-pill .work-entry, .planning-gantt-pill { border-width: 2px; }
+}
+
+[data-theme="skeuomorphism"] {
+  --pill-shadow: inset 0 1px 1px #ffffff99, 0 2px 4px #46301e55;
+}
+
+[data-theme="y2k"],
+[data-theme="vaporwave"] {
+  --pill-border: #ffffffc9;
+  --pill-shadow: inset 0 1px 2px #ffffffaa, 0 4px 0 color-mix(in srgb, var(--accent) 45%, #4c3076);
+}
+
+[data-theme="pixel-art"],
+[data-theme="hud"],
+[data-theme="cyberpunk"],
+[data-theme="midnight-runner"],
+[data-theme="oled"] {
+  --pill-border: var(--accent);
+  --pill-shadow: 0 0 10px color-mix(in srgb, var(--accent) 48%, transparent);
+}
+
+[data-theme="editorial"],
+[data-theme="analog-film"],
+[data-theme="e-ink"],
+[data-theme="nature-distilled"] {
+  --pill-border: var(--border-strong);
+  --pill-shadow: none;
+  .work-entry, .calendar-span-pill .work-entry, .planning-gantt-pill { border-radius: 2px; font-family: Georgia, "Times New Roman", serif; }
+}
+
+[data-theme="flat"],
+[data-theme="material"],
+[data-theme="bento"],
+[data-theme="minimalism"] {
+  --pill-shadow: none;
+}

@@ -1,4 +1,4 @@
-import { Blocks, Moon, Waves, Cloud, Layers3, Grid3X3, Orbit, Sunset, Gamepad2, Film, Box, Package, ScanLine, Accessibility, UsersRound, BookOpen, Droplets, Shapes, Minus, PencilRuler, Blend, Leaf, Sprout, Trees, Play, MousePointerClick, Type, Mountain, Hand, MousePointer2, CircleDashed, Sparkles, Radar, PanelsTopLeft, AudioLines, PanelTop, GalleryHorizontalEnd, ArrowUpRight, MessagesSquare, MonitorPlay, ShieldCheck, BookOpenText, Table2, Flame, BriefcaseBusiness, Activity, ListTree, Columns2, ChartNoAxesCombined, Route, Landmark, ChartColumnIncreasing, Gauge, Triangle } from "lucide-react";
+import { Blocks, Moon, Waves, Cloud, Layers3, Grid3X3, Orbit, Sunset, Gamepad2, Film, Box, Package, ScanLine, Accessibility, UsersRound, BookOpen, Droplets, Shapes, Minus, PencilRuler, Blend, Leaf, Sprout, Trees, Play, MousePointerClick, Type, Mountain, Hand, MousePointer2, CircleDashed, Sparkles, Radar, PanelsTopLeft, AudioLines, PanelTop, GalleryHorizontalEnd, ArrowUpRight, MessagesSquare, MonitorPlay, ShieldCheck, BookOpenText, Table2, Flame, BriefcaseBusiness, Activity, ListTree, Columns2, ChartNoAxesCombined, Route, Landmark, ChartColumnIncreasing, Gauge, Triangle, PenLine, SprayCan, Crown, WandSparkles, Palette, Scissors, PenTool, Monitor, FolderOpen } from "lucide-react";
 
 export const additionalThemes = [
   { value: "vibrant-blocks", label: "Vibrant & Block-based", Icon: Blocks },
@@ -56,5 +56,14 @@ export const additionalThemes = [
   { value: "sales", label: "Sales Intelligence Dashboard", Icon: ChartColumnIncreasing },
   { value: "midnight-runner", label: "MIDNIGHT RUNNER", Icon: Gauge },
   { value: "bauhaus", label: "Bauhaus", Icon: Triangle },
+  { value: "handwritten", label: "Handwritten", Icon: PenLine },
+  { value: "graffiti", label: "Graffiti", Icon: SprayCan },
+  { value: "victorian", label: "Victorian Style", Icon: Crown },
+  { value: "surreal", label: "Surreal Design", Icon: WandSparkles },
+  { value: "pop-art", label: "Pop Art", Icon: Palette },
+  { value: "collage-art", label: "Collage Art", Icon: Scissors },
+  { value: "vector-art", label: "Vector Art", Icon: PenTool },
+  { value: "monochrome-retro-os", label: "Monochrome Retro OS", Icon: Monitor },
+  { value: "pastel-retro-desktop", label: "Pastel Retro Desktop", Icon: FolderOpen },
 ];
 export const additionalDarkThemes = ["oled","retro-futurism","vaporwave","pixel-art","rgb-split","hud","monitoring","midnight-runner"];

@@ -1548,3 +1548,153 @@
   .theme-picker-empty { padding: 16px; font-size: 13px; color: var(--text-secondary); }
 }
 .appearance-panel .theme-options { max-height: 540px; overflow-y: auto; padding: 6px; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); }
+
+// Art-directed themes. They use the same data and controls as every dashboard
+// theme; only the visual language changes.
+:root[data-theme="handwritten"] {
+  --canvas:#fffaf1; --surface:#fffdf8; --surface-soft:#f4ead9; --surface-hover:#f7e7c7;
+  --text:#293643; --text-secondary:#5c6971; --text-muted:#687780; --border:#b7c7cd;
+  --border-strong:#67828c; --accent:#d45d57; --accent-hover:#b84945; --accent-soft:#ffe2d9;
+  --accent-text:#a5413d; --sidebar:#fff7e7; --shadow:2px 3px 0 #8fa7ae55; --shadow-lift:3px 5px 0 #8fa7ae55;
+  --radius:10px; --banner:#ffe8a8; --banner-text:#433c26;
+  font-family:"Comic Sans MS", "Bradley Hand", cursive;
+  body { background-image: repeating-linear-gradient(0deg, transparent 0 31px, #9fc0ce2e 32px 33px); }
+  h1,h2,h3,.brand { font-family:"Comic Sans MS", "Bradley Hand", cursive; font-weight:700; letter-spacing:0; }
+  .panel,.stat-card,.project-card,.person-card { border-style:dashed; transform:rotate(-.08deg); }
+  .button { border:2px solid #9d4946; border-radius:15px 11px 14px 9px; box-shadow:2px 3px 0 #9d4946; }
+  .sidebar nav a.active { background:#ffe0a6; color:#3d5360; }
+  .planning-gantt-pill,.work-entry { border-style:dashed !important; }
+}
+
+:root[data-theme="graffiti"] {
+  color-scheme:dark;
+  --canvas:#17121d; --surface:#251a2d; --surface-soft:#35233f; --surface-hover:#492951;
+  --text:#fff9ec; --text-secondary:#dbcde1; --text-muted:#ba9fc2; --border:#f7f0df; --border-strong:#ff4bb8;
+  --accent:#ffe843; --accent-hover:#ffcc33; --accent-soft:#5b214f; --accent-text:#ffe843; --sidebar:#1d1525;
+  --shadow:4px 4px 0 #00e4c4, -2px -2px 0 #ff4bb8; --shadow-lift:6px 6px 0 #00e4c4, -3px -3px 0 #ff4bb8;
+  --radius:8px; --banner:#47224e; --banner-text:#fff9ec;
+  font-family:Impact, "Arial Black", sans-serif;
+  body { background-image: radial-gradient(#ff4bb855 1px, transparent 1px), radial-gradient(#00e4c455 1px, transparent 1px); background-position:0 0, 9px 9px; background-size:18px 18px; }
+  h1,h2,h3,.brand { font-family:Impact, "Arial Black", sans-serif; text-transform:uppercase; letter-spacing:.04em; text-shadow:2px 2px #ff4bb8, -1px -1px #00e4c4; }
+  .panel,.stat-card,.project-card,.person-card,.modal { border:2px solid #fff9ec; box-shadow:var(--shadow); }
+  .button { border:2px solid #fff9ec; color:#241429; box-shadow:3px 3px 0 #00e4c4; }
+  .sidebar nav a.active { background:#ff4bb8; color:#fff; }
+}
+
+:root[data-theme="victorian"] {
+  --canvas:#eee5d5; --surface:#fffaf0; --surface-soft:#ede0c8; --surface-hover:#dfcda9;
+  --text:#39251d; --text-secondary:#765846; --text-muted:#896a54; --border:#9c744f; --border-strong:#704225;
+  --accent:#7a2331; --accent-hover:#5b1620; --accent-soft:#ead0c7; --accent-text:#61202a; --sidebar:#f5ead7;
+  --shadow:0 2px 0 #9c744f, 0 7px 13px #4c281b18; --shadow-lift:0 3px 0 #9c744f, 0 12px 20px #4c281b24;
+  --radius:2px; --banner:#e5d0a5; --banner-text:#39251d;
+  font-family:Georgia, "Times New Roman", serif;
+  body { background-image: repeating-linear-gradient(45deg,#7a23310a 0 1px,transparent 1px 8px), repeating-linear-gradient(-45deg,#7a23310a 0 1px,transparent 1px 8px); }
+  h1,h2,h3,.brand { font-family:Georgia,"Times New Roman",serif; font-weight:600; letter-spacing:-.025em; }
+  .panel-heading { border-bottom:double 4px var(--border); padding-bottom:14px; }
+  .panel,.stat-card,.project-card,.person-card { border:double 4px var(--border); }
+  .button { border:1px solid #5d271d; border-radius:2px; text-transform:uppercase; letter-spacing:.08em; font-family:Georgia,serif; }
+  .sidebar nav a.active { border-left:4px solid var(--accent); background:#eadbc3; color:#432b22; }
+}
+
+:root[data-theme="surreal"] {
+  --canvas:#e8e5ff; --surface:#fff9f5; --surface-soft:#e3d6ff; --surface-hover:#ffd7e8;
+  --text:#273a70; --text-secondary:#65548a; --text-muted:#75659a; --border:#9074c9; --border-strong:#63479b;
+  --accent:#e25c91; --accent-hover:#bd396d; --accent-soft:#ffdced; --accent-text:#a73266; --sidebar:#f4efff;
+  --shadow:8px 8px 0 #83d3cb66, -4px -4px 0 #ffccdd88; --shadow-lift:12px 12px 0 #83d3cb66, -5px -5px 0 #ffccdd88;
+  --radius:28px 8px 24px 11px; --banner:#cdeee9; --banner-text:#354e80;
+  body { background:radial-gradient(circle at 15% 15%,#ffbfd8 0 9%,transparent 10%),radial-gradient(circle at 87% 82%,#9fddd7 0 12%,transparent 13%),linear-gradient(125deg,#e8e5ff,#ffe8cf); background-attachment:fixed; }
+  h1,h2,h3 { font-family:"Baloo 2 Variable",sans-serif; font-weight:700; letter-spacing:-.04em; }
+  .panel:nth-child(3n+1),.stat-card:nth-child(3n+1) { border-radius:32px 8px 28px 10px; }
+  .panel:nth-child(3n+2),.stat-card:nth-child(3n+2) { border-radius:10px 30px 8px 26px; }
+  .project-symbol { border-radius:52% 48% 33% 67%; transform:rotate(-9deg); }
+  .button { border-radius:999px 18px 999px 15px; }
+}
+
+:root[data-theme="pop-art"] {
+  --canvas:#fff2ac; --surface:#fffdf1; --surface-soft:#bcecff; --surface-hover:#ffc4df;
+  --text:#17223f; --text-secondary:#405071; --text-muted:#566484; --border:#17223f; --border-strong:#17223f;
+  --accent:#ef426f; --accent-hover:#c83159; --accent-soft:#ffd4df; --accent-text:#c72e58; --sidebar:#fff9cf;
+  --shadow:5px 5px 0 #17223f; --shadow-lift:7px 7px 0 #17223f; --radius:0; --banner:#66d7e6; --banner-text:#17223f;
+  font-family:"Arial Black",Impact,sans-serif;
+  body { background-image:radial-gradient(#ef426f 1.5px,transparent 1.5px); background-size:9px 9px; }
+  h1,h2,h3,.brand { font-family:"Arial Black",Impact,sans-serif; text-transform:uppercase; letter-spacing:-.04em; }
+  .panel,.stat-card,.project-card,.person-card,.modal { border:3px solid #17223f; box-shadow:var(--shadow); }
+  .stat-card:nth-child(3n+1) { background:#ffb4ce; }.stat-card:nth-child(3n+2) { background:#8ee4f0; }.stat-card:nth-child(3n) { background:#ffdf62; }
+  .button { border:3px solid #17223f; box-shadow:3px 3px 0 #17223f; }
+  .project-symbol { border:3px solid #17223f; border-radius:50%; background:#ffdf62; }
+}
+
+:root[data-theme="collage-art"] {
+  --canvas:#f2ecdf; --surface:#fffdf7; --surface-soft:#e7dfd0; --surface-hover:#d6e8e0;
+  --text:#263a41; --text-secondary:#53676a; --text-muted:#6b7c7c; --border:#738c86; --border-strong:#3f5c59;
+  --accent:#d85d48; --accent-hover:#ad4030; --accent-soft:#f4d7c5; --accent-text:#aa4938; --sidebar:#ebe4d7;
+  --shadow:5px 6px 0 #6a817b44; --shadow-lift:8px 9px 0 #6a817b44; --radius:4px; --banner:#b9dfd4; --banner-text:#263a41;
+  body { background-image:linear-gradient(28deg,transparent 47%,#b5cfc755 48% 51%,transparent 52%),linear-gradient(-18deg,transparent 44%,#e9b0a555 45% 49%,transparent 50%); background-size:220px 190px; }
+  h1,h2,h3 { font-family:Georgia,serif; font-weight:600; }
+  .panel,.stat-card,.project-card,.person-card { box-shadow:var(--shadow); }
+  .panel:nth-child(odd),.project-card:nth-child(odd) { transform:rotate(-.3deg); clip-path:polygon(1% 0,99% 1%,100% 98%,2% 100%); }
+  .panel:nth-child(even),.project-card:nth-child(even) { transform:rotate(.25deg); clip-path:polygon(0 2%,98% 0,100% 99%,1% 98%); }
+  .button { border:1px dashed var(--border-strong); border-radius:3px; }
+}
+
+:root[data-theme="vector-art"] {
+  --canvas:#eff7ff; --surface:#fff; --surface-soft:#d8ebff; --surface-hover:#c8e4ff;
+  --text:#163455; --text-secondary:#426885; --text-muted:#56809d; --border:#79a8cf; --border-strong:#39779f;
+  --accent:#236db4; --accent-hover:#15558f; --accent-soft:#d5eaff; --accent-text:#17588e; --sidebar:#f5fbff;
+  --shadow:0 5px 0 #a8cae6; --shadow-lift:0 8px 0 #8ebce1; --radius:16px; --banner:#cbebff; --banner-text:#163455;
+  font-family:"Nunito Variable","Segoe UI",sans-serif;
+  body { background-image:linear-gradient(120deg,transparent 49%,#91c0e322 50% 51%,transparent 52%),linear-gradient(60deg,transparent 49%,#91c0e322 50% 51%,transparent 52%); background-size:54px 54px; }
+  h1,h2,h3 { font-family:"Nunito Variable",sans-serif; font-weight:850; letter-spacing:-.04em; }
+  .panel,.stat-card,.project-card,.person-card { border:2px solid var(--border); }
+  .project-symbol { border:2px solid var(--border-strong); background:linear-gradient(135deg,#fff 0 49%,#d8ebff 50%); }
+  .button { border:2px solid #15558f; border-radius:14px; box-shadow:0 4px 0 #15558f; }
+  .sidebar nav a.active { background:#d5eaff; color:#17588e; border-left:4px solid #236db4; }
+}
+
+.swatch-handwritten { background:#fffaf1; i { background:#d45d57; } }
+.swatch-graffiti { background:#251a2d; i { background:#ffe843; } }
+.swatch-victorian { background:#fffaf0; i { background:#7a2331; } }
+.swatch-surreal { background:#e8e5ff; i { background:#e25c91; } }
+.swatch-pop-art { background:#fff2ac; i { background:#ef426f; } }
+.swatch-collage-art { background:#f2ecdf; i { background:#d85d48; } }
+.swatch-vector-art { background:#eff7ff; i { background:#236db4; } }
+
+// Classic desktop systems interpreted as dashboard themes.
+:root[data-theme="monochrome-retro-os"] {
+  --canvas:#f5f5f1; --surface:#fff; --surface-soft:#e8e8e3; --surface-hover:#dadad3;
+  --text:#111; --text-secondary:#353535; --text-muted:#666; --border:#111; --border-strong:#000;
+  --accent:#111; --accent-hover:#343434; --accent-soft:#deded8; --accent-text:#111; --sidebar:#efefeb;
+  --shadow:3px 3px 0 #111; --shadow-lift:5px 5px 0 #111; --radius:0; --banner:#deded8; --banner-text:#111;
+  font-family:"Courier New", Courier, monospace;
+  body { background-image:linear-gradient(90deg,#1111110d 1px,transparent 1px),linear-gradient(#1111110d 1px,transparent 1px); background-size:8px 8px; }
+  h1,h2,h3,.brand { font-family:"Courier New",Courier,monospace; font-weight:800; letter-spacing:-.05em; text-transform:uppercase; }
+  .panel,.stat-card,.project-card,.person-card,.modal { border:2px solid #111; border-radius:0; box-shadow:var(--shadow); }
+  .panel-heading { padding-bottom:10px; border-bottom:2px solid #111; }
+  .button,.icon-button { border:2px solid #111; border-radius:0; box-shadow:2px 2px 0 #111; }
+  .button:active,.icon-button:active { box-shadow:none; transform:translate(2px,2px); }
+  input,select,textarea { border:2px solid #111; border-radius:0; box-shadow:inset 1px 1px 0 #777; }
+  .sidebar nav a { border:1px solid transparent; border-radius:0; }
+  .sidebar nav a.active { background:#111; color:#fff; border-color:#111; }
+  .planning-gantt-pill,.work-entry { border:2px solid #111 !important; border-radius:0 !important; box-shadow:2px 2px 0 #111; }
+}
+
+:root[data-theme="pastel-retro-desktop"] {
+  --canvas:#d7efee; --surface:#fff9eb; --surface-soft:#f4e6cb; --surface-hover:#f4ccc5;
+  --text:#292825; --text-secondary:#5d5a51; --text-muted:#78736a; --border:#292825; --border-strong:#292825;
+  --accent:#e97d71; --accent-hover:#ca6257; --accent-soft:#f4c5bd; --accent-text:#9c403a; --sidebar:#f8edda;
+  --shadow:4px 4px 0 #292825; --shadow-lift:7px 7px 0 #292825; --radius:9px; --banner:#f4d792; --banner-text:#292825;
+  font-family:"Trebuchet MS","Arial Rounded MT Bold",sans-serif;
+  body { background:radial-gradient(ellipse at 9% 15%,#f6df9c 0 12%,transparent 12.4%),radial-gradient(ellipse at 85% 87%,#efaaa0 0 14%,transparent 14.4%),linear-gradient(135deg,#d8eeee 0 49%,#fff2d6 49% 100%); background-attachment:fixed; }
+  h1,h2,h3,.brand { font-family:"Trebuchet MS","Arial Rounded MT Bold",sans-serif; font-weight:800; letter-spacing:-.04em; }
+  .panel,.stat-card,.project-card,.person-card,.modal { border:3px solid #292825; box-shadow:var(--shadow); }
+  .panel-heading { border-bottom:2px solid #292825; padding:11px 0; }
+  .button,.icon-button { border:3px solid #292825; border-radius:6px; box-shadow:3px 3px 0 #292825; font-weight:800; }
+  .button:active,.icon-button:active { box-shadow:0 0 0 #292825; transform:translate(3px,3px); }
+  input,select,textarea { border:2px solid #292825; border-radius:6px; background:#fffdf5; }
+  .sidebar nav a.active { background:#f2b5ab; color:#292825; border:2px solid #292825; box-shadow:2px 2px 0 #292825; }
+  .project-symbol { border:3px solid #292825; border-radius:5px; background:#f6d999; }
+  .planning-gantt-pill,.work-entry { border:2px solid #292825 !important; box-shadow:2px 2px 0 #292825; }
+}
+
+.swatch-monochrome-retro-os { background:#f5f5f1; i { background:#111; } }
+.swatch-pastel-retro-desktop { background:#fff2d6; i { background:#e97d71; } }
